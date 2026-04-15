@@ -1,0 +1,4 @@
+module FilmPostCore {
+    header "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/FilmPostCore-Swift.h"
+    requires objc
+}

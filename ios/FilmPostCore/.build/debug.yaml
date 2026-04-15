@@ -1,0 +1,112 @@
+client:
+  name: basic
+  file-system: device-agnostic
+tools: {}
+targets:
+  "FilmPostCore-arm64-apple-macosx15.0-debug.module": ["<FilmPostCore-arm64-apple-macosx15.0-debug.module>"]
+  "FilmPostCorePackageTests-arm64-apple-macosx15.0-debug.module": ["<FilmPostCorePackageTests-arm64-apple-macosx15.0-debug.module>"]
+  "FilmPostCorePackageTests-arm64-apple-macosx15.0-debug.test": ["<FilmPostCorePackageTests-arm64-apple-macosx15.0-debug.test>"]
+  "FilmPostCoreTests-arm64-apple-macosx15.0-debug.module": ["<FilmPostCoreTests-arm64-apple-macosx15.0-debug.module>"]
+  "PackageStructure": ["<PackageStructure>"]
+  "main": ["<FilmPostCore-arm64-apple-macosx15.0-debug.module>"]
+  "test": ["<FilmPostCore-arm64-apple-macosx15.0-debug.module>","<FilmPostCorePackageTests-arm64-apple-macosx15.0-debug.test>","<FilmPostCoreTests-arm64-apple-macosx15.0-debug.module>"]
+default: "main"
+nodes:
+  "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/Sources/FilmPostCore/":
+    is-directory-structure: true
+    content-exclusion-patterns: [".git",".build"]
+  "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/Tests/FilmPostCoreTests/":
+    is-directory-structure: true
+    content-exclusion-patterns: [".git",".build"]
+commands:
+  "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/Sources/FilmPostCore/Models/AnalysisResponse.swift","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/Sources/FilmPostCore/Networking/FilmPostAPIClient.swift","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/Sources/FilmPostCore/Networking/MultipartFormDataBuilder.swift"]
+    outputs: ["/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/sources"]
+    description: "Write auxiliary file /Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/sources"
+
+  "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCorePackageTests.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCorePackageTests.derived/runner.swift"]
+    outputs: ["/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCorePackageTests.build/sources"]
+    description: "Write auxiliary file /Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCorePackageTests.build/sources"
+
+  "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCorePackageTests.derived/runner.swift":
+    tool: test-entry-point-tool
+    inputs: []
+    outputs: ["/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCorePackageTests.derived/runner.swift"]
+
+  "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCorePackageTests.product/Objects.LinkFileList":
+    tool: write-auxiliary-file
+    inputs: ["<link-file-list>","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/AnalysisResponse.swift.o","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/FilmPostAPIClient.swift.o","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/MultipartFormDataBuilder.swift.o","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCorePackageTests.build/runner.swift.o","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCoreTests.build/AnalysisResponseDecodingTests.swift.o","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCoreTests.build/MultipartFormDataBuilderTests.swift.o"]
+    outputs: ["/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCorePackageTests.product/Objects.LinkFileList"]
+    description: "Write auxiliary file /Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCorePackageTests.product/Objects.LinkFileList"
+
+  "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCoreTests.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/Tests/FilmPostCoreTests/AnalysisResponseDecodingTests.swift","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/Tests/FilmPostCoreTests/MultipartFormDataBuilderTests.swift"]
+    outputs: ["/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCoreTests.build/sources"]
+    description: "Write auxiliary file /Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCoreTests.build/sources"
+
+  "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt":
+    tool: write-auxiliary-file
+    inputs: ["<swift-get-version>","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"]
+    outputs: ["/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"]
+    always-out-of-date: "true"
+    description: "Write auxiliary file /Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+
+  "<FilmPostCore-arm64-apple-macosx15.0-debug.module>":
+    tool: phony
+    inputs: ["/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/AnalysisResponse.swift.o","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/FilmPostAPIClient.swift.o","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/MultipartFormDataBuilder.swift.o","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/Modules/FilmPostCore.swiftmodule"]
+    outputs: ["<FilmPostCore-arm64-apple-macosx15.0-debug.module>"]
+
+  "<FilmPostCorePackageTests-arm64-apple-macosx15.0-debug.module>":
+    tool: phony
+    inputs: ["/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCorePackageTests.build/runner.swift.o","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/Modules/FilmPostCorePackageTests.swiftmodule"]
+    outputs: ["<FilmPostCorePackageTests-arm64-apple-macosx15.0-debug.module>"]
+
+  "<FilmPostCorePackageTests-arm64-apple-macosx15.0-debug.test>":
+    tool: phony
+    inputs: ["/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCorePackageTests.xctest/Contents/MacOS/FilmPostCorePackageTests"]
+    outputs: ["<FilmPostCorePackageTests-arm64-apple-macosx15.0-debug.test>"]
+
+  "<FilmPostCoreTests-arm64-apple-macosx15.0-debug.module>":
+    tool: phony
+    inputs: ["/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCoreTests.build/AnalysisResponseDecodingTests.swift.o","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCoreTests.build/MultipartFormDataBuilderTests.swift.o","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/Modules/FilmPostCoreTests.swiftmodule"]
+    outputs: ["<FilmPostCoreTests-arm64-apple-macosx15.0-debug.module>"]
+
+  "C.FilmPostCore-arm64-apple-macosx15.0-debug.module":
+    tool: shell
+    inputs: ["/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/Sources/FilmPostCore/Models/AnalysisResponse.swift","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/Sources/FilmPostCore/Networking/FilmPostAPIClient.swift","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/Sources/FilmPostCore/Networking/MultipartFormDataBuilder.swift","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/sources"]
+    outputs: ["/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/AnalysisResponse.swift.o","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/FilmPostAPIClient.swift.o","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/MultipartFormDataBuilder.swift.o","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/Modules/FilmPostCore.swiftmodule"]
+    description: "Compiling Swift Module 'FilmPostCore' (3 sources)"
+    args: ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc","-module-name","FilmPostCore","-emit-dependencies","-emit-module","-emit-module-path","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/Modules/FilmPostCore.swiftmodule","-output-file-map","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/output-file-map.json","-parse-as-library","-incremental","-c","@/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/sources","-I","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/Modules","-target","arm64-apple-macosx14.0","-enable-batch-mode","-index-store-path","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/index/store","-Onone","-enable-testing","-j8","-DSWIFT_PACKAGE","-DDEBUG","-module-cache-path","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/ModuleCache","-parseable-output","-parse-as-library","-emit-objc-header","-emit-objc-header-path","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/FilmPostCore-Swift.h","-swift-version","5","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-I","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-L","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-g","-Xcc","-isysroot","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-Xcc","-fPIC","-Xcc","-g","-package-name","filmpostcore"]
+
+  "C.FilmPostCorePackageTests-arm64-apple-macosx15.0-debug.module":
+    tool: shell
+    inputs: ["/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCorePackageTests.derived/runner.swift","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/Modules/FilmPostCoreTests.swiftmodule","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCorePackageTests.build/sources"]
+    outputs: ["/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCorePackageTests.build/runner.swift.o","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/Modules/FilmPostCorePackageTests.swiftmodule"]
+    description: "Compiling Swift Module 'FilmPostCorePackageTests' (1 sources)"
+    args: ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc","-module-name","FilmPostCorePackageTests","-emit-dependencies","-emit-module","-emit-module-path","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/Modules/FilmPostCorePackageTests.swiftmodule","-output-file-map","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCorePackageTests.build/output-file-map.json","-parse-as-library","-incremental","-c","@/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCorePackageTests.build/sources","-I","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/Modules","-target","arm64-apple-macosx14.0","-enable-batch-mode","-index-store-path","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/index/store","-Onone","-enable-testing","-Xfrontend","-enable-cross-import-overlays","-j8","-DSWIFT_PACKAGE","-DDEBUG","-module-cache-path","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/ModuleCache","-parseable-output","-parse-as-library","-emit-objc-header","-emit-objc-header-path","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCorePackageTests.build/FilmPostCorePackageTests-Swift.h","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-I","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-L","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-g","-Xcc","-isysroot","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-Xcc","-fPIC","-Xcc","-g","-package-name","filmpostcore"]
+
+  "C.FilmPostCorePackageTests-arm64-apple-macosx15.0-debug.test":
+    tool: shell
+    inputs: ["/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/AnalysisResponse.swift.o","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/FilmPostAPIClient.swift.o","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/MultipartFormDataBuilder.swift.o","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCorePackageTests.build/runner.swift.o","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCoreTests.build/AnalysisResponseDecodingTests.swift.o","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCoreTests.build/MultipartFormDataBuilderTests.swift.o","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCorePackageTests.product/Objects.LinkFileList"]
+    outputs: ["/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCorePackageTests.xctest/Contents/MacOS/FilmPostCorePackageTests"]
+    description: "Linking ./.build/arm64-apple-macosx/debug/FilmPostCorePackageTests.xctest/Contents/MacOS/FilmPostCorePackageTests"
+    args: ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc","-L","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug","-o","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCorePackageTests.xctest/Contents/MacOS/FilmPostCorePackageTests","-module-name","FilmPostCorePackageTests","-Xlinker","-no_warn_duplicate_libraries","-Xlinker","-bundle","-Xlinker","-rpath","-Xlinker","@loader_path/../../../","@/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCorePackageTests.product/Objects.LinkFileList","-target","arm64-apple-macosx14.0","-Xlinker","-add_ast_path","-Xlinker","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/Modules/FilmPostCore.swiftmodule","-Xlinker","-add_ast_path","-Xlinker","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/Modules/FilmPostCorePackageTests.swiftmodule","-Xlinker","-add_ast_path","-Xlinker","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/Modules/FilmPostCoreTests.swiftmodule","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-I","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-L","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-g"]
+
+  "C.FilmPostCoreTests-arm64-apple-macosx15.0-debug.module":
+    tool: shell
+    inputs: ["/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/Tests/FilmPostCoreTests/AnalysisResponseDecodingTests.swift","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/Tests/FilmPostCoreTests/MultipartFormDataBuilderTests.swift","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/Modules/FilmPostCore.swiftmodule","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCoreTests.build/sources"]
+    outputs: ["/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCoreTests.build/AnalysisResponseDecodingTests.swift.o","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCoreTests.build/MultipartFormDataBuilderTests.swift.o","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/Modules/FilmPostCoreTests.swiftmodule"]
+    description: "Compiling Swift Module 'FilmPostCoreTests' (2 sources)"
+    args: ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc","-module-name","FilmPostCoreTests","-emit-dependencies","-emit-module","-emit-module-path","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/Modules/FilmPostCoreTests.swiftmodule","-output-file-map","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCoreTests.build/output-file-map.json","-parse-as-library","-incremental","-c","@/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCoreTests.build/sources","-I","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/Modules","-target","arm64-apple-macosx14.0","-enable-batch-mode","-index-store-path","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/index/store","-Onone","-enable-testing","-Xfrontend","-enable-cross-import-overlays","-j8","-DSWIFT_PACKAGE","-DDEBUG","-module-cache-path","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/ModuleCache","-parseable-output","-parse-as-library","-swift-version","5","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-I","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-L","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-g","-Xcc","-isysroot","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-Xcc","-fPIC","-Xcc","-g","-package-name","filmpostcore"]
+
+  "PackageStructure":
+    tool: package-structure-tool
+    inputs: ["/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/Sources/FilmPostCore/","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/Tests/FilmPostCoreTests/","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/Package.swift","/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/Package.resolved"]
+    outputs: ["<PackageStructure>"]
+    description: "Planning build"
+    allow-missing-inputs: true
+

@@ -1,0 +1,33 @@
+FilmPost Design Notes
+
+Core product idea
+- FilmPost helps a user make a photo more cinematic before they shoot it.
+- The app compares one subject image and one background image, then translates that combination into three concrete, shootable directions.
+
+Why this is not a filter app
+- The product does not apply edits or visual overlays to the final image.
+- The value is creative coaching: pose, framing, distance, palette, and lighting decisions that change how the user shoots.
+
+System architecture
+- SwiftUI iOS app handles image picking, local state, loading UX, and result presentation.
+- A tiny Swift package carries shared network and decoding logic so the app code stays cleaner and testable.
+- FastAPI accepts multipart uploads and calls OpenAI with a strict structured-output schema.
+
+Data flow
+- User picks a subject photo and a background photo.
+- The app builds a multipart request with `subject_image` and `background_image`.
+- FastAPI validates the uploads, forwards both images to OpenAI, and parses the response into typed models.
+- The app renders `context_summary` plus exactly three recommendation cards.
+
+Tradeoffs made for MVP speed
+- No database, auth, history, or social features.
+- No live camera mode yet; photo-library import is the fastest polished demo path.
+- No image pre-processing pipeline; the backend sends the raw uploads directly to OpenAI.
+- The app uses a plist-based backend URL for simplicity instead of a fuller environment layering system.
+
+What I would improve next
+- Add device-safe backend environment switching and staging/prod config.
+- Introduce light response caching and request telemetry.
+- Add saved concepts and simple before-shoot collections.
+- Add camera capture with optional framing overlays and guided retakes.
+- Tighten the prompt with evals against real image pairs to improve consistency.

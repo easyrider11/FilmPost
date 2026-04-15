@@ -1,0 +1,23 @@
+{
+  "": {
+    "swift-dependencies": "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/master.swiftdeps"
+  },
+  "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/Sources/FilmPostCore/Models/AnalysisResponse.swift": {
+    "dependencies": "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/AnalysisResponse.d",
+    "object": "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/AnalysisResponse.swift.o",
+    "swiftmodule": "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/AnalysisResponse~partial.swiftmodule",
+    "swift-dependencies": "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/AnalysisResponse.swiftdeps"
+  },
+  "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/Sources/FilmPostCore/Networking/FilmPostAPIClient.swift": {
+    "dependencies": "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/FilmPostAPIClient.d",
+    "object": "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/FilmPostAPIClient.swift.o",
+    "swiftmodule": "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/FilmPostAPIClient~partial.swiftmodule",
+    "swift-dependencies": "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/FilmPostAPIClient.swiftdeps"
+  },
+  "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/Sources/FilmPostCore/Networking/MultipartFormDataBuilder.swift": {
+    "dependencies": "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/MultipartFormDataBuilder.d",
+    "object": "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/MultipartFormDataBuilder.swift.o",
+    "swiftmodule": "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/MultipartFormDataBuilder~partial.swiftmodule",
+    "swift-dependencies": "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCore.build/MultipartFormDataBuilder.swiftdeps"
+  }
+}

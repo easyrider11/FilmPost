@@ -1,0 +1,7 @@
+version: "Apple Swift version 5.10 (swiftlang-5.10.0.13 clang-1500.3.9.4)"
+options: "053faaf476a2b64adf474503d6ebe7f7"
+build_time: [1776225614, 451378000]
+inputs:
+  "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/Sources/FilmPostCore/Models/AnalysisResponse.swift": [1776225608, 804495256]
+  "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/Sources/FilmPostCore/Networking/FilmPostAPIClient.swift": [1776225608, 804695091]
+  "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/Sources/FilmPostCore/Networking/MultipartFormDataBuilder.swift": [1776225608, 804610173]
