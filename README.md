@@ -6,9 +6,9 @@ It is intentionally **not** a filter app. The product focuses on pose, framing, 
 
 ## Screens
 
-| Upload | Analyzing | Director results | Swipeable card | Cinema reference |
-| --- | --- | --- | --- | --- |
-| ![Upload](docs/screenshots/01-upload.png) | ![Analyzing](docs/screenshots/02-loading.png) | ![Results](docs/screenshots/03-results.png) | ![Card](docs/screenshots/04-card.png) | ![Cinema](docs/screenshots/05-cinema.png) |
+| Upload | Analyzing | Director results | Swipeable card | Cinema reference | Director profile |
+| --- | --- | --- | --- | --- | --- |
+| ![Upload](docs/screenshots/01-upload.png) | ![Analyzing](docs/screenshots/02-loading.png) | ![Results](docs/screenshots/03-results.png) | ![Card](docs/screenshots/04-card.png) | ![Cinema](docs/screenshots/05-cinema.png) | ![Director](docs/screenshots/06-director.png) |
 
 ## Architecture
 
