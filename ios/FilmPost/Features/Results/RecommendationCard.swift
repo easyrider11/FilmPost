@@ -8,35 +8,17 @@ struct RecommendationCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(recommendation.style)
-                        .font(.system(size: 24, weight: .semibold, design: .rounded))
-                        .foregroundStyle(FilmPostTheme.ink)
-
-                    Text("Direction \(index + 1) of \(total)")
-                        .font(.system(.caption, design: .rounded, weight: .semibold))
-                        .foregroundStyle(FilmPostTheme.slate)
-                }
-
-                Spacer()
-
-                Text("\(index + 1)")
-                    .font(.system(.subheadline, design: .rounded, weight: .semibold))
-                    .foregroundStyle(FilmPostTheme.ink)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(FilmPostTheme.panel, in: Capsule())
-            }
+            header
 
             Text(recommendation.whyThisMatches)
                 .font(.system(.subheadline, design: .rounded))
                 .foregroundStyle(FilmPostTheme.ink)
+                .lineSpacing(3)
                 .fixedSize(horizontal: false, vertical: true)
 
             Divider().background(FilmPostTheme.line)
 
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 11) {
                 InlineSpec(label: "Pose", value: recommendation.pose)
                 InlineSpec(label: "Composition", value: recommendation.composition)
                 InlineSpec(label: "Color", value: recommendation.colorDirection)
@@ -47,24 +29,45 @@ struct RecommendationCard: View {
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 26, style: .continuous)
-                .fill(Color.white.opacity(0.88))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 26, style: .continuous)
-                        .stroke(FilmPostTheme.line, lineWidth: 1)
-                )
-                .shadow(color: FilmPostTheme.shadow, radius: 20, x: 0, y: 10)
-        )
-        .overlay(alignment: .topLeading) {
-            RoundedRectangle(cornerRadius: 26, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [FilmPostTheme.amber.opacity(0.10), .clear],
-                        startPoint: .topLeading,
-                        endPoint: .center
+        .background {
+            ZStack {
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .fill(FilmPostTheme.card)
+
+                // soft amber wash on the upper-left corner only
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [FilmPostTheme.amber.opacity(0.10), .clear],
+                            startPoint: .topLeading,
+                            endPoint: .center
+                        )
                     )
-                )
+                    .allowsHitTesting(false)
+
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .stroke(FilmPostTheme.line, lineWidth: 1)
+            }
+            .compositingGroup()
+            .shadow(color: FilmPostTheme.shadow, radius: 18, x: 0, y: 10)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Direction \(index + 1) of \(total): \(recommendation.style)")
+    }
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Direction \(index + 1) of \(total)")
+                .font(.system(.caption, design: .rounded, weight: .semibold))
+                .foregroundStyle(FilmPostTheme.slate)
+                .textCase(.uppercase)
+                .tracking(0.8)
+
+            Text(recommendation.style)
+                .font(.system(.title2, design: .rounded, weight: .semibold))
+                .foregroundStyle(FilmPostTheme.ink)
+                .lineLimit(2)
+                .minimumScaleFactor(0.85)
         }
     }
 }
@@ -74,11 +77,13 @@ private struct InlineSpec: View {
     let value: String
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 10) {
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
             Text(label)
                 .font(.system(.caption, design: .rounded, weight: .semibold))
                 .foregroundStyle(FilmPostTheme.slate)
-                .frame(width: 78, alignment: .leading)
+                .textCase(.uppercase)
+                .tracking(0.6)
+                .frame(width: 104, alignment: .leading)
 
             Text(value)
                 .font(.system(.subheadline, design: .rounded))

@@ -12,32 +12,10 @@ struct UploadView: View {
         let canAnalyze = model.canAnalyze
 
         ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 18) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Plan the image before you take it.")
-                        .font(.system(size: 31, weight: .semibold, design: .rounded))
-                        .foregroundStyle(FilmPostTheme.ink)
+            VStack(alignment: .leading, spacing: 20) {
+                header
 
-                    Text("Pair one subject photo with one location photo. FilmPost turns that combination into three cinematic directions with pose, framing, distance, and light.")
-                        .font(.system(.subheadline, design: .rounded))
-                        .foregroundStyle(FilmPostTheme.slate)
-                        .lineSpacing(3)
-                }
-
-                HStack(spacing: 10) {
-                    Label("No filters", systemImage: "camera.aperture")
-                    Label("3 clear directions", systemImage: "rectangle.on.rectangle.angled")
-                }
-                .font(.system(.caption, design: .rounded, weight: .semibold))
-                .foregroundStyle(FilmPostTheme.slate)
-#if DEBUG
-                .contentShape(Rectangle())
-                .onLongPressGesture(minimumDuration: 0.9) {
-                    Task {
-                        await model.loadDebugSamplesAndAnalyze()
-                    }
-                }
-#endif
+                tagRow
 
                 PhotosPicker(
                     selection: $subjectPickerItem,
@@ -47,6 +25,9 @@ struct UploadView: View {
                     ImageSlotCard(role: .subject, photo: subjectPhoto)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(subjectPhoto == nil
+                    ? "Choose a subject photo"
+                    : "Subject photo selected, tap to replace")
 
                 PhotosPicker(
                     selection: $backgroundPickerItem,
@@ -56,33 +37,23 @@ struct UploadView: View {
                     ImageSlotCard(role: .background, photo: backgroundPhoto)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel(backgroundPhoto == nil
+                    ? "Choose a background photo"
+                    : "Background photo selected, tap to replace")
 
                 Button {
-                    Task {
-                        await model.analyze()
-                    }
+                    Task { await model.analyze() }
                 } label: {
                     HStack(spacing: 10) {
                         Text("Analyze")
                         Image(systemName: "sparkles")
                     }
-                    .font(.system(.headline, design: .rounded, weight: .semibold))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 17)
-                    .background(
-                        LinearGradient(
-                            colors: [FilmPostTheme.ink, FilmPostTheme.slate.opacity(0.92)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        in: RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    )
-                    .foregroundStyle(Color.white)
-                    .shadow(color: FilmPostTheme.ink.opacity(0.12), radius: 14, x: 0, y: 9)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(PrimaryButtonStyle())
                 .disabled(!canAnalyze)
-                .opacity(canAnalyze ? 1 : 0.45)
+                .accessibilityHint(canAnalyze
+                    ? "Sends both images to FilmPost for cinematic direction"
+                    : "Pick a subject and a background photo first")
 
                 Text("Each result stays short enough to use on set and specific enough to actually direct.")
                     .font(.system(.caption, design: .rounded))
@@ -99,5 +70,35 @@ struct UploadView: View {
             guard backgroundPickerItem != nil else { return }
             await model.loadPhoto(from: backgroundPickerItem, role: .background)
         }
+    }
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Plan the image before you take it.")
+                .font(.system(.largeTitle, design: .rounded, weight: .semibold))
+                .foregroundStyle(FilmPostTheme.ink)
+                .lineLimit(3)
+
+            Text("Pair one subject photo with one location photo. FilmPost turns that combination into three cinematic directions with pose, framing, distance, and light.")
+                .font(.system(.subheadline, design: .rounded))
+                .foregroundStyle(FilmPostTheme.slate)
+                .lineSpacing(3)
+        }
+    }
+
+    private var tagRow: some View {
+        HStack(spacing: 12) {
+            Label("No filters", systemImage: "camera.aperture")
+            Label("3 clear directions", systemImage: "rectangle.on.rectangle.angled")
+        }
+        .font(.system(.caption, design: .rounded, weight: .semibold))
+        .foregroundStyle(FilmPostTheme.slate)
+        .accessibilityElement(children: .combine)
+#if DEBUG
+        .contentShape(Rectangle())
+        .onLongPressGesture(minimumDuration: 0.9) {
+            Task { await model.loadDebugSamplesAndAnalyze() }
+        }
+#endif
     }
 }

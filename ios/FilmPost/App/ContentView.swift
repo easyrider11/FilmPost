@@ -10,29 +10,12 @@ struct ContentView: View {
                 CinematicBackdrop()
                     .ignoresSafeArea()
 
-                Group {
-                    switch model.currentScreen {
-                    case .upload:
-                        UploadView(model: model)
-                    case .loading:
-                        AnalysisLoadingView(subjectPhoto: model.subjectPhoto, backgroundPhoto: model.backgroundPhoto)
-                    case .results:
-                        if let analysis = model.analysis {
-                            ResultsView(
-                                analysis: analysis,
-                                subjectPhoto: model.subjectPhoto,
-                                backgroundPhoto: model.backgroundPhoto,
-                                onAnalyzeAnother: model.startOver,
-                                onResetAll: model.resetSelections
-                            )
-                        }
-                    }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                .padding(.horizontal, 20)
-                .padding(.top, 8)
-                .padding(.bottom, 24)
-                .animation(.snappy(duration: 0.35), value: model.currentScreen)
+                screen
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
+                    .padding(.bottom, 24)
+                    .animation(.smooth(duration: 0.32), value: model.currentScreen)
             }
             .task {
 #if DEBUG
@@ -41,11 +24,14 @@ struct ContentView: View {
                 await model.loadDebugSamplesAndAnalyze()
 #endif
             }
+            .toolbarBackground(FilmPostTheme.paper.opacity(0.92), for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Text("FilmPost")
                         .font(.system(.title3, design: .rounded, weight: .semibold))
                         .foregroundStyle(FilmPostTheme.ink)
+                        .accessibilityAddTraits(.isHeader)
                 }
 
                 ToolbarItem(placement: .topBarTrailing) {
@@ -54,6 +40,7 @@ struct ContentView: View {
                             model.resetSelections()
                         }
                         .tint(FilmPostTheme.ink)
+                        .accessibilityHint("Clears the selected subject and background images")
                     }
                 }
             }
@@ -67,18 +54,41 @@ struct ContentView: View {
             actions: {
                 if model.canAnalyze {
                     Button("Retry") {
-                        Task {
-                            await model.analyze()
-                        }
+                        Task { await model.analyze() }
                     }
                 }
-
                 Button("OK", role: .cancel) {}
             },
             message: {
                 Text(model.errorMessage ?? "")
             }
         )
+    }
+
+    @ViewBuilder
+    private var screen: some View {
+        switch model.currentScreen {
+        case .upload:
+            UploadView(model: model)
+                .transition(.opacity.combined(with: .move(edge: .leading)))
+        case .loading:
+            AnalysisLoadingView(
+                subjectPhoto: model.subjectPhoto,
+                backgroundPhoto: model.backgroundPhoto
+            )
+            .transition(.opacity)
+        case .results:
+            if let analysis = model.analysis {
+                ResultsView(
+                    analysis: analysis,
+                    subjectPhoto: model.subjectPhoto,
+                    backgroundPhoto: model.backgroundPhoto,
+                    onAnalyzeAnother: model.startOver,
+                    onResetAll: model.resetSelections
+                )
+                .transition(.opacity.combined(with: .move(edge: .trailing)))
+            }
+        }
     }
 }
 

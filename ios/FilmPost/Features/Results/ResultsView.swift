@@ -8,28 +8,18 @@ struct ResultsView: View {
     let onAnalyzeAnother: () -> Void
     let onResetAll: () -> Void
 
-    @State private var selectedIndex = 0
+    @State private var selectedID: Recommendation.ID?
 
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(alignment: .leading, spacing: 18) {
-                HStack(spacing: 12) {
-                    Button(action: onResetAll) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(FilmPostTheme.ink)
-                            .frame(width: 40, height: 40)
-                            .background(FilmPostTheme.panel, in: Circle())
-                            .overlay(Circle().stroke(FilmPostTheme.line, lineWidth: 1))
-                    }
-                    .accessibilityLabel("Back to photo selection")
-
-                    Spacer()
-                }
+            VStack(alignment: .leading, spacing: 20) {
+                topBar
 
                 Text("Three cleaner ways to stage this shot.")
-                    .font(.system(size: 28, weight: .semibold, design: .rounded))
+                    .font(.system(.title, design: .rounded, weight: .semibold))
                     .foregroundStyle(FilmPostTheme.ink)
+                    .lineLimit(3)
+                    .accessibilityAddTraits(.isHeader)
 
                 ContextSummaryCard(
                     summary: analysis.contextSummary,
@@ -37,47 +27,83 @@ struct ResultsView: View {
                     backgroundPhoto: backgroundPhoto
                 )
 
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Swipe through directions")
-                        .font(.system(.subheadline, design: .rounded, weight: .semibold))
-                        .foregroundStyle(FilmPostTheme.ink)
+                cardsCarousel
 
-                    TabView(selection: $selectedIndex) {
-                        ForEach(Array(analysis.recommendations.enumerated()), id: \.element.id) { index, recommendation in
-                            RecommendationCard(
-                                recommendation: recommendation,
-                                index: index,
-                                total: analysis.recommendations.count
-                            )
-                            .padding(.horizontal, 4)
-                            .padding(.bottom, 32)
-                            .tag(index)
-                        }
-                    }
-                    .frame(height: 520)
-                    .tabViewStyle(.page(indexDisplayMode: .always))
-                    .indexViewStyle(.page(backgroundDisplayMode: .always))
-                }
-
-                VStack(spacing: 10) {
-                    Button("Analyze Another Take") {
-                        onAnalyzeAnother()
-                    }
-                    .font(.system(.headline, design: .rounded, weight: .semibold))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(FilmPostTheme.ink, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-                    .foregroundStyle(Color.white)
-
-                    Button("Replace Images") {
-                        onResetAll()
-                    }
-                    .font(.system(.subheadline, design: .rounded, weight: .semibold))
-                    .foregroundStyle(FilmPostTheme.slate)
-                }
+                actions
             }
             .padding(.top, 8)
             .padding(.bottom, 28)
+        }
+    }
+
+    private var topBar: some View {
+        HStack {
+            Button(action: onResetAll) {
+                Image(systemName: "chevron.left")
+            }
+            .buttonStyle(CircleIconButtonStyle())
+            .accessibilityLabel("Back to photo selection")
+
+            Spacer()
+        }
+    }
+
+    private var cardsCarousel: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Swipe through directions")
+                    .font(.system(.subheadline, design: .rounded, weight: .semibold))
+                    .foregroundStyle(FilmPostTheme.ink)
+
+                Spacer()
+
+                if let selectedID,
+                   let index = analysis.recommendations.firstIndex(where: { $0.id == selectedID }) {
+                    Text("\(index + 1) / \(analysis.recommendations.count)")
+                        .font(.system(.caption, design: .rounded, weight: .semibold))
+                        .foregroundStyle(FilmPostTheme.slate)
+                        .monospacedDigit()
+                }
+            }
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                LazyHStack(spacing: 16) {
+                    ForEach(Array(analysis.recommendations.enumerated()), id: \.element.id) { index, recommendation in
+                        RecommendationCard(
+                            recommendation: recommendation,
+                            index: index,
+                            total: analysis.recommendations.count
+                        )
+                        .containerRelativeFrame(.horizontal)
+                        .id(recommendation.id)
+                    }
+                }
+                .scrollTargetLayout()
+            }
+            .scrollTargetBehavior(.viewAligned)
+            .scrollPosition(id: $selectedID)
+            .scrollClipDisabled()
+
+            PageDots(
+                count: analysis.recommendations.count,
+                activeIndex: analysis.recommendations.firstIndex(where: { $0.id == selectedID }) ?? 0
+            )
+            .frame(maxWidth: .infinity)
+        }
+        .onAppear {
+            if selectedID == nil {
+                selectedID = analysis.recommendations.first?.id
+            }
+        }
+    }
+
+    private var actions: some View {
+        VStack(spacing: 8) {
+            Button("Analyze Another Take", action: onAnalyzeAnother)
+                .buttonStyle(PrimaryButtonStyle())
+
+            Button("Replace Images", action: onResetAll)
+                .buttonStyle(SecondaryButtonStyle())
         }
     }
 }
@@ -94,15 +120,18 @@ private struct ContextSummaryCard: View {
                 preview(for: backgroundPhoto, label: "Background")
             }
 
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text("Scene Read")
                     .font(.system(.caption, design: .rounded, weight: .semibold))
                     .foregroundStyle(FilmPostTheme.slate)
+                    .textCase(.uppercase)
+                    .tracking(0.6)
 
                 Text(summary)
                     .font(.system(.subheadline, design: .rounded))
                     .foregroundStyle(FilmPostTheme.ink)
                     .lineSpacing(3)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         .padding(18)
@@ -115,6 +144,8 @@ private struct ContextSummaryCard: View {
             Text(label)
                 .font(.system(.caption, design: .rounded, weight: .semibold))
                 .foregroundStyle(FilmPostTheme.slate)
+                .textCase(.uppercase)
+                .tracking(0.6)
 
             Group {
                 if let photo {
@@ -122,13 +153,31 @@ private struct ContextSummaryCard: View {
                         .resizable()
                         .scaledToFill()
                 } else {
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
                         .fill(FilmPostTheme.mist)
                 }
             }
             .frame(maxWidth: .infinity)
             .frame(height: 96)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .accessibilityLabel("\(label) image preview")
         }
+    }
+}
+
+private struct PageDots: View {
+    let count: Int
+    let activeIndex: Int
+
+    var body: some View {
+        HStack(spacing: 7) {
+            ForEach(0..<count, id: \.self) { i in
+                Capsule()
+                    .fill(i == activeIndex ? FilmPostTheme.ink : FilmPostTheme.slate.opacity(0.28))
+                    .frame(width: i == activeIndex ? 22 : 7, height: 7)
+                    .animation(.smooth(duration: 0.25), value: activeIndex)
+            }
+        }
+        .accessibilityHidden(true)
     }
 }
