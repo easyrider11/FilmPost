@@ -60,12 +60,16 @@ struct ResultsView: View {
                let index = analysis.recommendations.firstIndex(where: { $0.id == selectedID }) {
                 Text("Look \(index + 1) of \(analysis.recommendations.count)")
                     .font(FilmPostType.label(.caption, weight: .semibold))
-                    .foregroundStyle(FilmPostTheme.slate)
+                    .foregroundStyle(FilmPostTheme.verdigris)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
                     .background(
                         Capsule(style: .continuous)
-                            .fill(FilmPostTheme.panel.opacity(0.58))
+                            .fill(FilmPostTheme.verdigris.opacity(0.10))
+                            .overlay(
+                                Capsule(style: .continuous)
+                                    .stroke(FilmPostTheme.verdigris.opacity(0.25), lineWidth: 1)
+                            )
                     )
             }
         }
@@ -96,7 +100,11 @@ struct ResultsView: View {
                     .padding(.vertical, 6)
                     .background(
                         Capsule(style: .continuous)
-                            .fill(FilmPostTheme.panel.opacity(0.58))
+                            .fill(FilmPostTheme.rust.opacity(0.08))
+                            .overlay(
+                                Capsule(style: .continuous)
+                                    .stroke(FilmPostTheme.rust.opacity(0.22), lineWidth: 1)
+                            )
                     )
             }
         }

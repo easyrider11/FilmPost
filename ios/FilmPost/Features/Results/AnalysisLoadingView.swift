@@ -254,7 +254,7 @@ private struct LoadingStep: View {
         case .complete:
             ZStack {
                 Circle()
-                    .fill(FilmPostTheme.ink)
+                    .fill(FilmPostTheme.verdigris)
                     .frame(width: 20, height: 20)
                 Image(systemName: "checkmark")
                     .font(.system(size: 9, weight: .bold))

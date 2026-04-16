@@ -398,11 +398,20 @@ struct FilmDetailView: View {
             Text("🎨").font(.system(size: 13))
             Text(context.filmMood)
                 .font(FilmPostType.label(.caption2, weight: .semibold))
-                .foregroundStyle(FilmPostTheme.ink)
+                .foregroundStyle(FilmPostTheme.verdigris)
+                .textCase(.uppercase)
+                .tracking(FilmPostType.labelTracking)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 8)
-        .background(Capsule(style: .continuous).fill(FilmPostTheme.mist))
+        .background(
+            Capsule(style: .continuous)
+                .fill(FilmPostTheme.verdigris.opacity(0.10))
+                .overlay(
+                    Capsule(style: .continuous)
+                        .stroke(FilmPostTheme.verdigris.opacity(0.28), lineWidth: 1)
+                )
+        )
     }
 
     private func infoCard(emoji: String, kicker: String, text: String) -> some View {
