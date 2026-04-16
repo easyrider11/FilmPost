@@ -83,6 +83,41 @@ private struct EmojiKicker: View {
     }
 }
 
+// MARK: - Wikipedia attribution caption
+
+/// Required Wikipedia / CC-BY-SA attribution rendered under any image or
+/// blurb sourced from the Wikipedia REST summary API. Renders as a tappable
+/// link when an article URL is available, and as plain text otherwise so we
+/// always credit the source even when the page URL is missing from the
+/// summary payload.
+private struct WikipediaAttribution: View {
+    let articleURL: URL?
+    var alignment: HorizontalAlignment = .center
+
+    var body: some View {
+        Group {
+            if let articleURL {
+                Link(destination: articleURL) {
+                    HStack(spacing: 4) {
+                        Text("Source: Wikipedia")
+                        Image(systemName: "arrow.up.right")
+                            .font(.system(size: 9, weight: .semibold))
+                    }
+                    .foregroundStyle(FilmPostTheme.slate)
+                }
+                .accessibilityLabel("Source on Wikipedia, opens in browser")
+            } else {
+                Text("Source: Wikipedia")
+                    .foregroundStyle(FilmPostTheme.slate.opacity(0.75))
+            }
+        }
+        .font(FilmPostType.label(.caption2, weight: .semibold))
+        .textCase(.uppercase)
+        .tracking(FilmPostType.labelTracking)
+        .frame(maxWidth: .infinity, alignment: alignment == .center ? .center : .leading)
+    }
+}
+
 // MARK: - Movie poster (Wikipedia)
 
 private struct FilmPosterCard: View {
@@ -110,8 +145,8 @@ private struct FilmPosterCard: View {
     @ViewBuilder
     private var posterContent: some View {
         switch state {
-        case .loaded(let url):
-            AsyncImage(url: url) { phase in
+        case .loaded(let poster):
+            AsyncImage(url: poster.imageURL) { phase in
                 switch phase {
                 case .success(let image):
                     image.resizable().scaledToFill()
@@ -277,8 +312,13 @@ struct DirectorDetailView: View {
 
     private var heroHeader: some View {
         VStack(alignment: .leading, spacing: 18) {
-            DirectorPortraitCard(name: context.name, state: profileLoader.state)
-                .frame(maxWidth: .infinity, alignment: .center)
+            VStack(spacing: 8) {
+                DirectorPortraitCard(name: context.name, state: profileLoader.state)
+                if hasLoadedPortrait {
+                    WikipediaAttribution(articleURL: currentArticleURL)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .center)
 
             VStack(alignment: .leading, spacing: 6) {
                 EmojiKicker(emoji: "🎥", text: "Directorial Voice")
@@ -296,6 +336,20 @@ struct DirectorDetailView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    private var hasLoadedPortrait: Bool {
+        if case .loaded(let profile) = profileLoader.state, profile.portraitURL != nil {
+            return true
+        }
+        return false
+    }
+
+    private var currentArticleURL: URL? {
+        if case .loaded(let profile) = profileLoader.state {
+            return profile.articleURL
+        }
+        return nil
+    }
+
     private func bioCard(text: String) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             EmojiKicker(emoji: "📖", text: "Brief biography")
@@ -305,11 +359,7 @@ struct DirectorDetailView: View {
                 .lineSpacing(3)
                 .lineLimit(6)
                 .fixedSize(horizontal: false, vertical: true)
-            Text("Source: Wikipedia")
-                .font(FilmPostType.label(.caption2, weight: .semibold))
-                .foregroundStyle(FilmPostTheme.slate.opacity(0.75))
-                .textCase(.uppercase)
-                .tracking(FilmPostType.labelTracking)
+            WikipediaAttribution(articleURL: currentArticleURL, alignment: .leading)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(CinemaDetailLayout.cardPadding)
@@ -404,6 +454,16 @@ struct FilmDetailView: View {
     let context: FilmContext
     @State private var posterLoader = FilmPosterLoader()
 
+    private var hasLoadedPoster: Bool {
+        if case .loaded = posterLoader.state { return true }
+        return false
+    }
+
+    private var currentArticleURL: URL? {
+        if case .loaded(let poster) = posterLoader.state { return poster.articleURL }
+        return nil
+    }
+
     var body: some View {
         ZStack(alignment: .top) {
             CinematicBackdrop().ignoresSafeArea()
@@ -442,8 +502,13 @@ struct FilmDetailView: View {
 
     private var heroHeader: some View {
         VStack(alignment: .leading, spacing: 18) {
-            FilmPosterCard(title: context.title, state: posterLoader.state)
-                .frame(maxWidth: .infinity, alignment: .center)
+            VStack(spacing: 8) {
+                FilmPosterCard(title: context.title, state: posterLoader.state)
+                if hasLoadedPoster {
+                    WikipediaAttribution(articleURL: currentArticleURL)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .center)
 
             VStack(alignment: .leading, spacing: 10) {
                 EmojiKicker(emoji: "🎬", text: "Cinema Reference")

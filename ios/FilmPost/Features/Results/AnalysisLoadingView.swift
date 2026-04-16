@@ -5,6 +5,10 @@ struct AnalysisLoadingView: View {
     private let horizontalContentInset: CGFloat = 12
     let subjectPhoto: SelectedPhoto?
     let backgroundPhoto: SelectedPhoto?
+    /// Optional bail-out hook. Provided by `ContentView`; nil-ing it out (e.g.
+    /// in previews) hides the Cancel button entirely so it doesn't render as
+    /// a dead control.
+    var onCancel: (() -> Void)? = nil
 
     @State private var scanProgress: CGFloat = 0
     @State private var activeStepIndex = 0
@@ -43,6 +47,24 @@ struct AnalysisLoadingView: View {
                 }
                 .padding(18)
                 .editorialCard(cornerRadius: 24)
+
+                if let onCancel {
+                    Button(role: .cancel, action: onCancel) {
+                        Text("Cancel")
+                            .font(FilmPostType.label(.subheadline, weight: .semibold))
+                            .tracking(FilmPostType.labelTracking)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(FilmPostTheme.slate)
+                    .overlay(
+                        Capsule(style: .continuous)
+                            .stroke(FilmPostTheme.slate.opacity(0.45), lineWidth: 1)
+                    )
+                    .padding(.top, 4)
+                    .accessibilityHint("Stops the in-progress analysis and returns to your photos.")
+                }
             }
             .padding(.top, 12)
             .padding(.horizontal, horizontalContentInset)
