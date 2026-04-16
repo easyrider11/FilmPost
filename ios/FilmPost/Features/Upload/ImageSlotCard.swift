@@ -15,21 +15,25 @@ struct ImageSlotCard: View {
     }
 
     private var header: some View {
-        HStack(alignment: .top, spacing: 12) {
-            VStack(alignment: .leading, spacing: 5) {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
                 Text(role.title)
                     .font(FilmPostType.body(.title3, weight: .semibold))
                     .foregroundStyle(FilmPostTheme.ink)
+                    .layoutPriority(1)
 
-                Text(photo == nil ? emptyHint : filledHint)
-                    .font(FilmPostType.body(.subheadline))
-                    .foregroundStyle(FilmPostTheme.slate)
-                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 12)
+
+                statusPill
             }
 
-            Spacer()
-
-            statusPill
+            Text(photo == nil ? emptyHint : filledHint)
+                .font(FilmPostType.body(.subheadline))
+                .foregroundStyle(FilmPostTheme.slate)
+                .lineSpacing(2)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
