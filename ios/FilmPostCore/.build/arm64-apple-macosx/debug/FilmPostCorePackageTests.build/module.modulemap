@@ -1,4 +1,0 @@
-module FilmPostCorePackageTests {
-    header "/Users/PC/Documents/GitHub/FilmPost/ios/FilmPostCore/.build/arm64-apple-macosx/debug/FilmPostCorePackageTests.build/FilmPostCorePackageTests-Swift.h"
-    requires objc
-}

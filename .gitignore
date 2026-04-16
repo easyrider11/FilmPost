@@ -9,12 +9,13 @@ __pycache__/
 *.pyc
 
 # Swift / Xcode
-ios/.build/
+**/.build/
 ios/build/
 ios/DerivedData/
 ios/FilmPost.xcodeproj/
 *.xcuserdata/
 xcuserdata/
+.swiftpm/
 
 # Local scratch
 tmp/
