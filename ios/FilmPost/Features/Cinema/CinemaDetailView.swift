@@ -158,10 +158,83 @@ private extension AsyncImagePhase {
     }
 }
 
+// MARK: - Director portrait (Wikipedia)
+
+private struct DirectorPortraitCard: View {
+    let name: String
+    let state: DirectorProfileLoader.LoadState
+    private let portraitSize = CGSize(width: 180, height: 220)
+
+    var body: some View {
+        portraitContent
+            .frame(width: portraitSize.width, height: portraitSize.height)
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .padding(10)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(FilmPostTheme.paper)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(FilmPostTheme.hairline, lineWidth: 1)
+                    )
+                    .shadow(color: FilmPostTheme.shadow.opacity(1.4), radius: 22, x: 0, y: 12)
+            )
+            .accessibilityLabel("\(name) portrait")
+    }
+
+    @ViewBuilder
+    private var portraitContent: some View {
+        switch state {
+        case .loaded(let profile):
+            if let url = profile.portraitURL {
+                AsyncImage(url: url) { phase in
+                    switch phase {
+                    case .success(let image):
+                        image.resizable().scaledToFill()
+                    case .failure, .empty:
+                        placeholder(showSpinner: phase.isEmpty)
+                    @unknown default:
+                        placeholder(showSpinner: false)
+                    }
+                }
+            } else {
+                placeholder(showSpinner: false)
+            }
+        case .loading, .idle:
+            placeholder(showSpinner: true)
+        case .failed:
+            placeholder(showSpinner: false)
+        }
+    }
+
+    @ViewBuilder
+    private func placeholder(showSpinner: Bool) -> some View {
+        ZStack {
+            LinearGradient(
+                colors: [
+                    FilmPostTheme.mist,
+                    FilmPostTheme.panel.opacity(0.6),
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            VStack(spacing: 12) {
+                Text("🎬")
+                    .font(.system(size: 56))
+                if showSpinner {
+                    ProgressView()
+                        .tint(FilmPostTheme.amber)
+                }
+            }
+        }
+    }
+}
+
 // MARK: - Director detail
 
 struct DirectorDetailView: View {
     let context: DirectorContext
+    @State private var profileLoader = DirectorProfileLoader()
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -171,6 +244,9 @@ struct DirectorDetailView: View {
                 VStack(alignment: .leading, spacing: CinemaDetailLayout.sectionSpacing) {
                     heroHeader
                     Hairline()
+                    if let bio = currentBio, !bio.isEmpty {
+                        bioCard(text: bio)
+                    }
                     if !context.directorNote.isEmpty {
                         infoCard(emoji: "📝", kicker: "Style for this shot", text: context.directorNote)
                     }
@@ -189,11 +265,20 @@ struct DirectorDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(FilmPostTheme.paper.opacity(0.94), for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
+        .task {
+            await profileLoader.load(directorName: context.name)
+        }
+    }
+
+    private var currentBio: String? {
+        if case .loaded(let profile) = profileLoader.state { return profile.bio }
+        return nil
     }
 
     private var heroHeader: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            EmojiBadge(emoji: "🎬", size: 68)
+        VStack(alignment: .leading, spacing: 18) {
+            DirectorPortraitCard(name: context.name, state: profileLoader.state)
+                .frame(maxWidth: .infinity, alignment: .center)
 
             VStack(alignment: .leading, spacing: 6) {
                 EmojiKicker(emoji: "🎥", text: "Directorial Voice")
@@ -209,6 +294,26 @@ struct DirectorDetailView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func bioCard(text: String) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            EmojiKicker(emoji: "📖", text: "Brief biography")
+            Text(text)
+                .font(FilmPostType.body(.subheadline))
+                .foregroundStyle(FilmPostTheme.ink)
+                .lineSpacing(3)
+                .lineLimit(6)
+                .fixedSize(horizontal: false, vertical: true)
+            Text("Source: Wikipedia")
+                .font(FilmPostType.label(.caption2, weight: .semibold))
+                .foregroundStyle(FilmPostTheme.slate.opacity(0.75))
+                .textCase(.uppercase)
+                .tracking(FilmPostType.labelTracking)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(CinemaDetailLayout.cardPadding)
+        .editorialCard(cornerRadius: CinemaDetailLayout.cardCornerRadius)
     }
 
     private var moodGoalCard: some View {
