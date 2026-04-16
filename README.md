@@ -49,7 +49,7 @@ FilmPost/
 ### 1. Clone
 
 ```bash
-git clone https://github.com/easyrider11/FilmPose.git FilmPost
+git clone https://github.com/easyrider11/FilmPost.git
 cd FilmPost
 ```
 
