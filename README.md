@@ -6,7 +6,7 @@ It is intentionally **not** a filter app. The product focuses on pose, framing, 
 
 ## Screens
 
-| Upload | Analyzing | Three directions | Single card |
+| Upload | Analyzing | Director results | Swipeable card |
 | --- | --- | --- | --- |
 | ![Upload](docs/screenshots/01-upload.png) | ![Analyzing](docs/screenshots/02-loading.png) | ![Results](docs/screenshots/03-results.png) | ![Card](docs/screenshots/04-card.png) |
 
@@ -118,7 +118,7 @@ The default backend URL in [ios/FilmPost/Info.plist](ios/FilmPost/Info.plist) is
 
 - `pytest -q` → **5 passed**
 - `xcodegen generate` → builds a clean `FilmPost.xcodeproj`
-- End-to-end run on iPhone 16 simulator (iOS 18) hitting a local backend with a real OpenAI key — all four screenshots above were captured from a live run.
+- End-to-end run on iPhone 16 simulator (iOS 18) hitting a local backend with a real OpenAI key — the refreshed screenshots above were captured from the current live build.
 
 ## Known Limitations
 
