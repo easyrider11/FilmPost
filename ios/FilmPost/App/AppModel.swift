@@ -46,19 +46,23 @@ final class AppModel {
 
         do {
             guard let data = try await item.loadTransferable(type: Data.self),
-                  let previewImage = UIImage(data: data) else {
+                  let originalImage = UIImage(data: data) else {
                 throw PhotoLoadError.invalidData
             }
 
-            let contentType = item.supportedContentTypes.first ?? .jpeg
-            let mimeType = contentType.preferredMIMEType ?? "image/jpeg"
-            let fileExtension = contentType.preferredFilenameExtension ?? "jpg"
+            // Upload-side compression: a modern iPhone HEIC/JPEG can run
+            // 6–10 MB. The backend re-encodes to ~1568px on the long edge
+            // anyway, so shipping the full original wastes bytes on cellular
+            // and slows the round-trip. Downscaling to 2048px @ q=0.8 keeps
+            // plenty of headroom for the backend's resize while typically
+            // cutting upload bytes by 4–8x.
+            let compressed = ImageUploadCompressor.compress(originalImage)
             let photo = SelectedPhoto(
                 role: role,
-                data: data,
-                filename: "\(role.filenameStem).\(fileExtension)",
-                mimeType: mimeType,
-                previewImage: previewImage
+                data: compressed.data,
+                filename: "\(role.filenameStem).jpg",
+                mimeType: "image/jpeg",
+                previewImage: compressed.previewImage
             )
 
             assign(photo, to: role)
@@ -73,17 +77,18 @@ final class AppModel {
     /// the same `SelectedPhoto` shape as the library-picker path. Re-encodes
     /// the image as JPEG so the upload pipeline stays format-agnostic.
     func loadPhoto(from image: UIImage, role: ImageRole) {
-        guard let data = image.jpegData(compressionQuality: 0.92) else {
+        let compressed = ImageUploadCompressor.compress(image)
+        guard !compressed.data.isEmpty else {
             errorMessage = "FilmPost couldn't process that camera capture. Try again."
             return
         }
 
         let photo = SelectedPhoto(
             role: role,
-            data: data,
+            data: compressed.data,
             filename: "\(role.filenameStem).jpg",
             mimeType: "image/jpeg",
-            previewImage: image
+            previewImage: compressed.previewImage
         )
 
         assign(photo, to: role)

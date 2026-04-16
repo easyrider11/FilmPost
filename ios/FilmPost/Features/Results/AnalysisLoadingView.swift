@@ -12,6 +12,7 @@ struct AnalysisLoadingView: View {
 
     @State private var scanProgress: CGFloat = 0
     @State private var activeStepIndex = 0
+    @State private var didTapCancelCount = 0
 
     private let steps = [
         "Reading the subject",
@@ -49,7 +50,10 @@ struct AnalysisLoadingView: View {
                 .editorialCard(cornerRadius: 24)
 
                 if let onCancel {
-                    Button(role: .cancel, action: onCancel) {
+                    Button(role: .cancel) {
+                        didTapCancelCount &+= 1
+                        onCancel()
+                    } label: {
                         Text("Cancel")
                             .font(FilmPostType.label(.subheadline, weight: .semibold))
                             .tracking(FilmPostType.labelTracking)
@@ -64,6 +68,10 @@ struct AnalysisLoadingView: View {
                     )
                     .padding(.top, 4)
                     .accessibilityHint("Stops the in-progress analysis and returns to your photos.")
+                    // Light tactile confirmation that the cancel was heard,
+                    // since the visual transition back to upload happens
+                    // after the URLSession task is actually torn down.
+                    .sensoryFeedback(.impact(weight: .light), trigger: didTapCancelCount)
                 }
             }
             .padding(.top, 12)
