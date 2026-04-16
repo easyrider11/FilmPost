@@ -10,9 +10,13 @@ import Observation
 /// name resolves to a disambiguation page or 404s.
 @Observable
 final class DirectorProfileLoader {
-    struct Profile: Equatable {
+    struct Profile: Equatable, Sendable {
         let portraitURL: URL?
         let bio: String
+        /// The canonical Wikipedia article page (used for required CC-BY-SA
+        /// attribution on the biography blurb). May be nil if the summary
+        /// response omitted it.
+        let articleURL: URL?
     }
 
     enum LoadState: Equatable {
@@ -31,11 +35,21 @@ final class DirectorProfileLoader {
             return
         }
 
+        // Process-wide cache: same director can appear across multiple
+        // recommendation cards, and revisits used to re-hit Wikipedia each
+        // time. Cached hits land synchronously so the portrait + bio appear
+        // without the placeholder flash.
+        if let cached = await DirectorProfileCache.shared.profile(for: name) {
+            state = .loaded(cached)
+            return
+        }
+
         state = .loading
 
         let candidates = [name, "\(name) (director)", "\(name) (filmmaker)"]
         for candidate in candidates {
             if let profile = await fetch(title: candidate) {
+                await DirectorProfileCache.shared.store(profile, for: name)
                 state = .loaded(profile)
                 return
             }
@@ -69,7 +83,11 @@ final class DirectorProfileLoader {
             // is unlikely to be the director we're after.
             guard portrait != nil || bio.count >= 40 else { return nil }
 
-            return Profile(portraitURL: portrait, bio: bio)
+            return Profile(
+                portraitURL: portrait,
+                bio: bio,
+                articleURL: decoded.content_urls?.desktop?.page
+            )
         } catch {
             return nil
         }
@@ -80,9 +98,36 @@ final class DirectorProfileLoader {
         let extract: String?
         let originalimage: ImageRef?
         let thumbnail: ImageRef?
+        let content_urls: ContentURLs?
+    }
+
+    private struct ContentURLs: Decodable {
+        let desktop: Variant?
+
+        struct Variant: Decodable {
+            let page: URL?
+        }
     }
 
     private struct ImageRef: Decodable {
         let source: URL
+    }
+}
+
+/// In-memory cache for resolved director profiles. Keyed by the trimmed
+/// user-facing name (the same key used by `load(directorName:)`), so the
+/// same director referenced across multiple recommendation cards hits the
+/// network at most once per session.
+private actor DirectorProfileCache {
+    static let shared = DirectorProfileCache()
+
+    private var entries: [String: DirectorProfileLoader.Profile] = [:]
+
+    func profile(for name: String) -> DirectorProfileLoader.Profile? {
+        entries[name]
+    }
+
+    func store(_ profile: DirectorProfileLoader.Profile, for name: String) {
+        entries[name] = profile
     }
 }

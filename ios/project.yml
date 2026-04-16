@@ -29,6 +29,12 @@ targets:
       - path: FilmPost
     info:
       path: FilmPost/Info.plist
+      properties:
+        # Required so iOS will surface the system camera prompt when the
+        # user picks the Camera capture option in the upload sheet. Mirrored
+        # here because xcodegen rewrites Info.plist on each `xcodegen generate`
+        # and would otherwise drop any value added directly to the plist.
+        NSCameraUsageDescription: FilmPost uses the camera so you can capture a fresh subject or background photo without leaving the app.
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.filmpost.app

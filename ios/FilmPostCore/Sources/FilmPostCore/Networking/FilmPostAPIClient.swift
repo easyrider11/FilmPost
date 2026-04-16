@@ -22,6 +22,9 @@ public enum FilmPostAPIError: LocalizedError, Equatable, Sendable {
     case decodingFailed
     case server(String)
     case transport(String)
+    case offline
+    case timedOut
+    case cancelled
 
     public var errorDescription: String? {
         switch self {
@@ -35,6 +38,12 @@ public enum FilmPostAPIError: LocalizedError, Equatable, Sendable {
             return message
         case .transport(let message):
             return "FilmPost could not reach the backend (\(message)). Check that the API is running and reachable."
+        case .offline:
+            return "FilmPost can't reach the network. Check your connection and try again."
+        case .timedOut:
+            return "FilmPost is taking longer than expected. Please try again in a moment."
+        case .cancelled:
+            return "Analysis cancelled."
         }
     }
 }
@@ -58,6 +67,10 @@ public struct FilmPostAPIClient: FilmPostAPIClientProtocol {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        // The OpenAI vision call typically settles in 6–14s; the backend itself
+        // caps at 30s. 45s gives the slowest legitimate path room without
+        // letting the user stare at a spinner forever if the server is wedged.
+        request.timeoutInterval = 45
         request.httpBody = try MultipartFormDataBuilder.makeAnalyzeBody(
             subjectData: subject.data,
             subjectFilename: subject.filename,
@@ -72,6 +85,22 @@ public struct FilmPostAPIClient: FilmPostAPIClientProtocol {
         let response: URLResponse
         do {
             (data, response) = try await session.data(for: request)
+        } catch let urlError as URLError {
+            // Map system-level network failures to specific cases so the UI
+            // can show the right thing (offline banner vs. retry hint vs.
+            // silent dismiss on user-cancelled).
+            switch urlError.code {
+            case .cancelled:
+                throw FilmPostAPIError.cancelled
+            case .notConnectedToInternet, .networkConnectionLost, .dataNotAllowed:
+                throw FilmPostAPIError.offline
+            case .timedOut:
+                throw FilmPostAPIError.timedOut
+            default:
+                throw FilmPostAPIError.transport(urlError.localizedDescription)
+            }
+        } catch is CancellationError {
+            throw FilmPostAPIError.cancelled
         } catch {
             throw FilmPostAPIError.transport(error.localizedDescription)
         }

@@ -17,6 +17,12 @@ final class AppModel {
     var isAnalyzing = false
     var errorMessage: String?
 
+    // Held so the loading screen's Cancel button can interrupt an in-flight
+    // analyze request (cancelling the URLSession data task surfaces as a
+    // URLError.cancelled, which the API client maps to FilmPostAPIError.cancelled
+    // and we silently swallow rather than rendering as an error banner).
+    private var analysisTask: Task<Void, Never>?
+
     init(apiClient: FilmPostAPIClientProtocol = FilmPostAPIClient(baseURL: AppConfiguration.apiBaseURL)) {
         self.apiClient = apiClient
     }
@@ -88,25 +94,62 @@ final class AppModel {
     func analyze() async {
         guard let subjectPhoto, let backgroundPhoto else { return }
 
+        // Belt-and-braces: if a previous task is somehow still around, drop it
+        // before starting a new one so two requests can't race the same state.
+        analysisTask?.cancel()
+
         isAnalyzing = true
         errorMessage = nil
 
-        do {
-            analysis = try await apiClient.analyze(
-                subject: ImageUpload(
-                    data: subjectPhoto.data,
-                    filename: subjectPhoto.filename,
-                    mimeType: subjectPhoto.mimeType
-                ),
-                background: ImageUpload(
-                    data: backgroundPhoto.data,
-                    filename: backgroundPhoto.filename,
-                    mimeType: backgroundPhoto.mimeType
-                )
+        let subjectUpload = ImageUpload(
+            data: subjectPhoto.data,
+            filename: subjectPhoto.filename,
+            mimeType: subjectPhoto.mimeType
+        )
+        let backgroundUpload = ImageUpload(
+            data: backgroundPhoto.data,
+            filename: backgroundPhoto.filename,
+            mimeType: backgroundPhoto.mimeType
+        )
+
+        let task = Task { [apiClient] in
+            await runAnalyze(
+                client: apiClient,
+                subject: subjectUpload,
+                background: backgroundUpload
             )
+        }
+        analysisTask = task
+        await task.value
+        analysisTask = nil
+    }
+
+    /// Cancels an in-flight analyze request. The URLSession data task gets
+    /// cancelled, which surfaces as `URLError.cancelled` -> `.cancelled` in
+    /// the API client; we treat that as a user-initiated reset and silently
+    /// drop back to the upload screen.
+    func cancelAnalysis() {
+        analysisTask?.cancel()
+    }
+
+    private func runAnalyze(
+        client: FilmPostAPIClientProtocol,
+        subject: ImageUpload,
+        background: ImageUpload
+    ) async {
+        do {
+            analysis = try await client.analyze(subject: subject, background: background)
+        } catch FilmPostAPIError.cancelled {
+            // User tapped Cancel — silently drop back to the upload screen
+            // without surfacing a scary-looking error banner.
+            analysis = nil
+            errorMessage = nil
         } catch let error as FilmPostAPIError {
             errorMessage = error.errorDescription
             analysis = nil
+        } catch is CancellationError {
+            analysis = nil
+            errorMessage = nil
         } catch {
             errorMessage = "FilmPost hit an unexpected problem. Please try again."
             analysis = nil

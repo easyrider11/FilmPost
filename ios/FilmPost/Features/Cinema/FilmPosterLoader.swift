@@ -10,10 +10,17 @@ import Observation
 /// resolves to a disambiguation page or 404s.
 @Observable
 final class FilmPosterLoader {
+    struct Poster: Equatable, Sendable {
+        let imageURL: URL
+        /// The canonical Wikipedia article page (used for required CC-BY-SA
+        /// attribution). May be nil if the summary response omitted it.
+        let articleURL: URL?
+    }
+
     enum LoadState: Equatable {
         case idle
         case loading
-        case loaded(URL)
+        case loaded(Poster)
         case failed
     }
 
@@ -26,12 +33,22 @@ final class FilmPosterLoader {
             return
         }
 
+        // Process-wide cache: the same film can be referenced from multiple
+        // recommendation cards across a session, and revisits used to re-hit
+        // Wikipedia every time. Cached hits land synchronously so the poster
+        // appears without a flash of placeholder.
+        if let cached = await FilmPosterCache.shared.poster(for: title) {
+            state = .loaded(cached)
+            return
+        }
+
         state = .loading
 
         let candidates = [title, "\(title) (film)"]
         for candidate in candidates {
-            if let url = await fetch(title: candidate) {
-                state = .loaded(url)
+            if let poster = await fetch(title: candidate) {
+                await FilmPosterCache.shared.store(poster, for: title)
+                state = .loaded(poster)
                 return
             }
         }
@@ -39,7 +56,7 @@ final class FilmPosterLoader {
         state = .failed
     }
 
-    private func fetch(title: String) async -> URL? {
+    private func fetch(title: String) async -> Poster? {
         let normalized = title.replacingOccurrences(of: " ", with: "_")
         guard let encoded = normalized.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
               let url = URL(string: "https://en.wikipedia.org/api/rest_v1/page/summary/\(encoded)") else {
@@ -56,7 +73,8 @@ final class FilmPosterLoader {
 
             let decoded = try JSONDecoder().decode(WikipediaSummary.self, from: data)
             if decoded.type == "disambiguation" { return nil }
-            return decoded.originalimage?.source ?? decoded.thumbnail?.source
+            guard let image = decoded.originalimage?.source ?? decoded.thumbnail?.source else { return nil }
+            return Poster(imageURL: image, articleURL: decoded.content_urls?.desktop?.page)
         } catch {
             return nil
         }
@@ -66,9 +84,36 @@ final class FilmPosterLoader {
         let type: String?
         let originalimage: ImageRef?
         let thumbnail: ImageRef?
+        let content_urls: ContentURLs?
+    }
+
+    private struct ContentURLs: Decodable {
+        let desktop: Variant?
+
+        struct Variant: Decodable {
+            let page: URL?
+        }
     }
 
     private struct ImageRef: Decodable {
         let source: URL
+    }
+}
+
+/// In-memory cache for resolved film posters. Keyed by the trimmed
+/// user-facing title (the same key used by `load(filmTitle:)`), so two
+/// recommendation cards referencing "Lost in Translation" hit the network
+/// at most once per session.
+private actor FilmPosterCache {
+    static let shared = FilmPosterCache()
+
+    private var entries: [String: FilmPosterLoader.Poster] = [:]
+
+    func poster(for title: String) -> FilmPosterLoader.Poster? {
+        entries[title]
+    }
+
+    func store(_ poster: FilmPosterLoader.Poster, for title: String) {
+        entries[title] = poster
     }
 }

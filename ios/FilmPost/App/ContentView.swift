@@ -68,7 +68,8 @@ struct ContentView: View {
         case .loading:
             AnalysisLoadingView(
                 subjectPhoto: model.subjectPhoto,
-                backgroundPhoto: model.backgroundPhoto
+                backgroundPhoto: model.backgroundPhoto,
+                onCancel: model.cancelAnalysis
             )
             .transition(.opacity)
         case .results:
