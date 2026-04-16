@@ -2,7 +2,7 @@
 
 FilmPost is a lightweight iOS MVP that acts like an AI photography coach. A user picks one **subject** photo and one **background** photo, taps **Analyze**, and receives three cinematic photo directions that help them stage a stronger image *before* the shutter clicks.
 
-It is intentionally **not** a filter app. The product focuses on pose, framing, light, color mood, and camera distance so the output reads as creative direction, not post-processing advice.
+It is intentionally **not** a filter app. The product focuses on pose, framing, light, color mood, camera distance, and **director-led cinema references** so the output reads as creative direction, not post-processing advice.
 
 ## Screens
 
@@ -18,7 +18,7 @@ FilmPost/
 │   ├── app/
 │   │   ├── main.py           POST /v1/analyze endpoint
 │   │   ├── services.py       Pillow downscale + AsyncOpenAI client
-│   │   ├── prompts.py        Coaching system prompt + user prompt
+│   │   ├── prompts.py        Coaching system prompt + director-reference prompt
 │   │   ├── models.py         Pydantic response schema (the contract)
 │   │   └── config.py         Env-driven settings
 │   └── tests/                Pytest suite with stubbed OpenAI service
@@ -29,7 +29,7 @@ FilmPost/
 └── docs/screenshots/         Captures used in this README
 ```
 
-**Data flow:** the app reads two `PhotosPicker` images → `FilmPostCore` builds a `multipart/form-data` request → `POST /v1/analyze` downscales each image (Pillow, 1568px long edge) → `client.responses.parse(text_format=AnalysisResponse)` enforces a typed JSON contract → app renders three swipeable cards.
+**Data flow:** the app reads two `PhotosPicker` images → `FilmPostCore` builds a `multipart/form-data` request → `POST /v1/analyze` downscales each image (Pillow, 1568px long edge) → `client.responses.parse(text_format=AnalysisResponse)` enforces a typed JSON contract with director notes + cinema references → app renders three swipeable cards.
 
 ## Tech Stack
 
@@ -110,8 +110,8 @@ The default backend URL in [ios/FilmPost/Info.plist](ios/FilmPost/Info.plist) is
 ## Design Notes
 
 - The Pydantic `AnalysisResponse` model in [backend/app/models.py](backend/app/models.py) doubles as the contract sent to OpenAI via `responses.parse(text_format=...)` — there is no separate JSON-schema file to keep in sync.
-- The system prompt in [backend/app/prompts.py](backend/app/prompts.py) enforces *contrast across three directions* (camera distance, framing, pose energy, palette, mood). Field-length caps in the model and prompt are tuned for one-glance mobile cards.
-- The result card in [ios/FilmPost/Features/Results/RecommendationCard.swift](ios/FilmPost/Features/Results/RecommendationCard.swift) deliberately uses an inline label + value layout (no nested scroll views, no 2x2 grid) so every keyword is visible without tapping into a detail screen.
+- The system prompt in [backend/app/prompts.py](backend/app/prompts.py) now enforces *contrast across three directions* plus a **cinema-reference layer**: each recommendation must tie the location to a recognizable film scene or director signature and explain what to borrow from it.
+- Each result card now has three reading layers: a **director note**, a **cinema anchor** (film + director + scene takeaway), and the tactical on-set details (pose, composition, color, distance, light).
 - Sample images live in [ios/FilmPost/Resources/DebugSamples](ios/FilmPost/Resources/DebugSamples) — launch with the `-auto-demo` argument to skip the picker for quick demos.
 
 ## Verified
@@ -126,6 +126,7 @@ The default backend URL in [ios/FilmPost/Info.plist](ios/FilmPost/Info.plist) is
 - No live camera capture or on-device composition overlays.
 - No authentication, analytics, or moderation layer.
 - Backend base URL is configured at build time, not in-app.
+- The MVP returns **textual film references**, not licensed still-image assets; this keeps the feature demoable without adding copyright or third-party asset dependencies.
 - Placeholder app icon — fine for review, not branding.
 
 ## License

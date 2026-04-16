@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var model = AppModel()
     @State private var hasStartedDebugAutoDemo = false
 
@@ -15,30 +16,25 @@ struct ContentView: View {
                     .padding(.horizontal, 20)
                     .padding(.top, 8)
                     .padding(.bottom, 24)
-                    .animation(.smooth(duration: 0.32), value: model.currentScreen)
+                    .animation(reduceMotion ? .easeInOut(duration: 0.18) : .smooth(duration: 0.32), value: model.currentScreen)
             }
             .task {
-#if DEBUG
-                guard !hasStartedDebugAutoDemo, DebugLaunchOptions.shouldAutoRunDemo() else { return }
-                hasStartedDebugAutoDemo = true
-                await model.loadDebugSamplesAndAnalyze()
-#endif
+                await runDebugAutoDemoIfNeeded()
             }
-            .toolbarBackground(FilmPostTheme.paper.opacity(0.92), for: .navigationBar)
+            .toolbarBackground(FilmPostTheme.paper.opacity(0.94), for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Text("FilmPost")
-                        .font(.system(.title3, design: .rounded, weight: .semibold))
+                        .font(FilmPostType.body(.subheadline, weight: .semibold))
                         .foregroundStyle(FilmPostTheme.ink)
                         .accessibilityAddTraits(.isHeader)
                 }
 
                 ToolbarItem(placement: .topBarTrailing) {
                     if model.currentScreen == .upload, model.subjectPhoto != nil || model.backgroundPhoto != nil {
-                        Button("Reset") {
-                            model.resetSelections()
-                        }
+                        Button("Reset", action: resetSelections)
+                        .font(FilmPostType.body(.footnote, weight: .medium))
                         .tint(FilmPostTheme.ink)
                         .accessibilityHint("Clears the selected subject and background images")
                     }
@@ -46,16 +42,14 @@ struct ContentView: View {
             }
         }
         .alert(
-            "Analysis couldn't finish",
+            "Couldn't develop that take",
             isPresented: Binding(
                 get: { model.errorMessage != nil },
                 set: { if !$0 { model.errorMessage = nil } }
             ),
             actions: {
                 if model.canAnalyze {
-                    Button("Retry") {
-                        Task { await model.analyze() }
-                    }
+                    Button("Retry", action: retryAnalysis)
                 }
                 Button("OK", role: .cancel) {}
             },
@@ -70,7 +64,7 @@ struct ContentView: View {
         switch model.currentScreen {
         case .upload:
             UploadView(model: model)
-                .transition(.opacity.combined(with: .move(edge: .leading)))
+                .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .leading)))
         case .loading:
             AnalysisLoadingView(
                 subjectPhoto: model.subjectPhoto,
@@ -86,9 +80,25 @@ struct ContentView: View {
                     onAnalyzeAnother: model.startOver,
                     onResetAll: model.resetSelections
                 )
-                .transition(.opacity.combined(with: .move(edge: .trailing)))
+                .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .trailing)))
             }
         }
+    }
+
+    private func retryAnalysis() {
+        Task { await model.analyze() }
+    }
+
+    private func resetSelections() {
+        model.resetSelections()
+    }
+
+    private func runDebugAutoDemoIfNeeded() async {
+#if DEBUG
+        guard !hasStartedDebugAutoDemo, DebugLaunchOptions.shouldAutoRunDemo() else { return }
+        hasStartedDebugAutoDemo = true
+        await model.loadDebugSamplesAndAnalyze()
+#endif
     }
 }
 
