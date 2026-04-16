@@ -7,6 +7,12 @@ struct UploadView: View {
     @Bindable var model: AppModel
     @State private var subjectPickerItem: PhotosPickerItem?
     @State private var backgroundPickerItem: PhotosPickerItem?
+    @State private var subjectSourceMenuVisible = false
+    @State private var backgroundSourceMenuVisible = false
+    @State private var subjectLibraryVisible = false
+    @State private var backgroundLibraryVisible = false
+    @State private var subjectCameraVisible = false
+    @State private var backgroundCameraVisible = false
 
     var body: some View {
         let subjectPhoto = model.subjectPhoto
@@ -19,29 +25,55 @@ struct UploadView: View {
 
                 featureHighlights
 
-                PhotosPicker(
+                slotButton(
+                    role: .subject,
+                    photo: subjectPhoto,
+                    menuPresented: $subjectSourceMenuVisible
+                )
+                .confirmationDialog(
+                    "Add subject photo",
+                    isPresented: $subjectSourceMenuVisible,
+                    titleVisibility: .visible
+                ) {
+                    sourceMenuButtons(
+                        camera: $subjectCameraVisible,
+                        library: $subjectLibraryVisible
+                    )
+                }
+                .photosPicker(
+                    isPresented: $subjectLibraryVisible,
                     selection: $subjectPickerItem,
                     matching: .images,
                     photoLibrary: .shared()
-                ) {
-                    ImageSlotCard(role: .subject, photo: subjectPhoto)
+                )
+                .fullScreenCover(isPresented: $subjectCameraVisible) {
+                    cameraSheet(role: .subject) { subjectCameraVisible = false }
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(subjectPhoto == nil
-                    ? "Choose a subject photo"
-                    : "Subject photo selected, tap to replace")
 
-                PhotosPicker(
+                slotButton(
+                    role: .background,
+                    photo: backgroundPhoto,
+                    menuPresented: $backgroundSourceMenuVisible
+                )
+                .confirmationDialog(
+                    "Add background photo",
+                    isPresented: $backgroundSourceMenuVisible,
+                    titleVisibility: .visible
+                ) {
+                    sourceMenuButtons(
+                        camera: $backgroundCameraVisible,
+                        library: $backgroundLibraryVisible
+                    )
+                }
+                .photosPicker(
+                    isPresented: $backgroundLibraryVisible,
                     selection: $backgroundPickerItem,
                     matching: .images,
                     photoLibrary: .shared()
-                ) {
-                    ImageSlotCard(role: .background, photo: backgroundPhoto)
+                )
+                .fullScreenCover(isPresented: $backgroundCameraVisible) {
+                    cameraSheet(role: .background) { backgroundCameraVisible = false }
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(backgroundPhoto == nil
-                    ? "Choose a background photo"
-                    : "Background photo selected, tap to replace")
 
                 Button(action: analyzeImages) {
                     HStack(spacing: 10) {
@@ -151,6 +183,56 @@ struct UploadView: View {
 
     private func runDebugDemo() {
         Task { await model.loadDebugSamplesAndAnalyze() }
+    }
+
+    @ViewBuilder
+    private func slotButton(
+        role: ImageRole,
+        photo: SelectedPhoto?,
+        menuPresented: Binding<Bool>
+    ) -> some View {
+        Button {
+            menuPresented.wrappedValue = true
+        } label: {
+            ImageSlotCard(role: role, photo: photo)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(photo == nil
+            ? "Choose a \(role.title.lowercased()) photo"
+            : "\(role.title) photo selected, tap to replace")
+        .accessibilityHint("Take a new photo or pick one from your library")
+    }
+
+    @ViewBuilder
+    private func sourceMenuButtons(
+        camera: Binding<Bool>,
+        library: Binding<Bool>
+    ) -> some View {
+        if CameraPicker.isAvailable {
+            Button {
+                camera.wrappedValue = true
+            } label: {
+                Label("Take photo", systemImage: "camera")
+            }
+        }
+        Button {
+            library.wrappedValue = true
+        } label: {
+            Label("Choose from library", systemImage: "photo.on.rectangle.angled")
+        }
+        Button("Cancel", role: .cancel) {}
+    }
+
+    @ViewBuilder
+    private func cameraSheet(role: ImageRole, dismiss: @escaping () -> Void) -> some View {
+        CameraPicker(
+            onCapture: { image in
+                model.loadPhoto(from: image, role: role)
+                dismiss()
+            },
+            onCancel: dismiss
+        )
+        .ignoresSafeArea()
     }
 }
 

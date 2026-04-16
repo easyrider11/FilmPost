@@ -18,5 +18,7 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>NSCameraUsageDescription</key>
+	<string>FilmPost uses the camera so you can capture a fresh subject or background photo without leaving the app.</string>
 </dict>
 </plist>

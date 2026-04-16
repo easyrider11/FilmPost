@@ -63,6 +63,28 @@ final class AppModel {
         }
     }
 
+    /// Adopts a freshly captured `UIImage` (typically from `CameraPicker`) into
+    /// the same `SelectedPhoto` shape as the library-picker path. Re-encodes
+    /// the image as JPEG so the upload pipeline stays format-agnostic.
+    func loadPhoto(from image: UIImage, role: ImageRole) {
+        guard let data = image.jpegData(compressionQuality: 0.92) else {
+            errorMessage = "FilmPost couldn't process that camera capture. Try again."
+            return
+        }
+
+        let photo = SelectedPhoto(
+            role: role,
+            data: data,
+            filename: "\(role.filenameStem).jpg",
+            mimeType: "image/jpeg",
+            previewImage: image
+        )
+
+        assign(photo, to: role)
+        analysis = nil
+        errorMessage = nil
+    }
+
     func analyze() async {
         guard let subjectPhoto, let backgroundPhoto else { return }
 
