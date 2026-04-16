@@ -136,6 +136,11 @@ struct ResultsView: View {
             .scrollTargetBehavior(.viewAligned)
             .scrollPosition(id: $selectedID)
             .scrollClipDisabled()
+            // Light selection-style haptic each time a different card snaps
+            // into focus. Carousel discovery is the core moment of the
+            // results screen; the haptic makes the gesture feel "expensive"
+            // and intentional rather than weightless.
+            .sensoryFeedback(.selection, trigger: selectedID)
 
             PageDots(
                 count: analysis.recommendations.count,
@@ -152,14 +157,37 @@ struct ResultsView: View {
 
     private var actions: some View {
         VStack(spacing: 10) {
-            Button("Adjust this pair", action: onAnalyzeAnother)
+            // ShareLink renders the system share sheet so users can hand
+            // the focused direction to a model / DP / iMessage thread
+            // without retyping. We share the currently-centered card only
+            // (the carousel is one-card-at-a-time UX).
+            if let selectedRecommendation {
+                ShareLink(
+                    item: selectedRecommendation.shareText,
+                    subject: Text("FilmPost direction: \(selectedRecommendation.style)"),
+                    message: Text("Inspired by \(selectedRecommendation.cinemaReference.filmTitle).")
+                ) {
+                    Label("Share this direction", systemImage: "square.and.arrow.up")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(SecondaryButtonStyle())
+                .accessibilityHint("Opens the share sheet with this direction's full brief.")
+            }
+
+            Button("Adjust this pair") {
+                didTapAnalyzeAnotherCount &+= 1
+                onAnalyzeAnother()
+            }
                 .buttonStyle(PrimaryButtonStyle())
                 .accessibilityInputLabels(["Adjust this pair", "Analyze again", "Regenerate looks"])
+                .sensoryFeedback(.impact(weight: .medium), trigger: didTapAnalyzeAnotherCount)
 
             Button("Choose new photos", action: onResetAll)
                 .buttonStyle(SecondaryButtonStyle())
         }
     }
+
+    @State private var didTapAnalyzeAnotherCount = 0
 
     private func updateSelectedIDIfNeeded() {
         if selectedID == nil {
