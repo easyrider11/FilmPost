@@ -16,20 +16,25 @@ It is intentionally **not** a filter app. The product focuses on pose, framing, 
 FilmPost/
 ├── backend/                  FastAPI service that talks to OpenAI
 │   ├── app/
-│   │   ├── main.py           POST /v1/analyze endpoint
-│   │   ├── services.py       Pillow downscale + AsyncOpenAI client
+│   │   ├── main.py           POST /v1/analyze + slowapi rate limiting + health
+│   │   ├── services.py       EXIF scrub + Pillow downscale + AsyncOpenAI client (timeout/cap/retry)
 │   │   ├── prompts.py        Coaching system prompt + director-reference prompt
 │   │   ├── models.py         Pydantic response schema (the contract)
-│   │   └── config.py         Env-driven settings
-│   └── tests/                Pytest suite with stubbed OpenAI service
+│   │   └── config.py         Env-driven settings (uploads, OpenAI caps, rate limits)
+│   └── tests/                Pytest: API + image sanitizer (EXIF/orientation/fallback)
 ├── ios/
-│   ├── FilmPost/             SwiftUI app: upload → loading → results
-│   ├── FilmPostCore/         Swift package: typed models + multipart client
+│   ├── FilmPost/
+│   │   ├── App/              AppModel (cancellable analyze) + ImageUploadCompressor
+│   │   ├── Features/         Upload, Camera, Loading (cancel), Results (carousel + share)
+│   │   └── Features/Cinema/  Wikipedia poster + portrait loaders w/ actor cache + attribution
+│   ├── FilmPostCore/         Swift package: typed models + multipart client + URLError mapping
 │   └── project.yml           XcodeGen spec (no .xcodeproj checked in)
 └── docs/screenshots/         Captures used in this README
 ```
 
-**Data flow:** the app reads two `PhotosPicker` images → `FilmPostCore` builds a `multipart/form-data` request → `POST /v1/analyze` downscales each image (Pillow, 1568px long edge) → `client.responses.parse(text_format=AnalysisResponse)` enforces a typed JSON contract with director notes + cinema references → app renders three swipeable cards.
+**Data flow:** the app reads two `PhotosPicker` images (or a fresh camera capture) → an upload-side downscale to ≤2048px JPEG q=0.8 trims cellular waste → `FilmPostCore` builds a `multipart/form-data` request with a 45s timeout → `POST /v1/analyze` strips EXIF/GPS, applies orientation, and re-downscales (Pillow, 1568px long edge) before calling `client.responses.parse(text_format=AnalysisResponse)` to enforce a typed JSON contract with director notes + cinema references → app renders three swipeable cards with carousel haptics, a system Share sheet per direction, and tappable Wikipedia attribution under each cinema poster / director portrait.
+
+**Privacy & cost guardrails:** EXIF/GPS metadata is scrubbed server-side before any image bytes leave for OpenAI; the analyze call has a 30s wall-clock cap, a 1200-token output ceiling, one retry on transient timeout, and per-IP rate limiting (10/min · 100/day) via `slowapi`. On the iOS side, in-flight analyze requests are cancellable from the loading screen, and Wikipedia poster/portrait lookups are memoized in a process-wide actor cache so revisiting the same film/director is instant.
 
 ## Tech Stack
 
@@ -86,15 +91,24 @@ In Xcode: pick **iPhone 16** (or any iOS 17+ simulator), press **⌘R**.
 | `OPENAI_API_KEY` | Required for live analysis. Without it `/v1/analyze` returns 503. | *(unset)* |
 | `OPENAI_MODEL` | Vision model used for parsing | `gpt-4o-mini` |
 | `FILMPOST_MAX_UPLOAD_BYTES` | Upload cap per image | `8388608` (8 MB) |
-| `FILMPOST_CORS_ORIGINS` | JSON list of allowed origins | `["http://127.0.0.1:8000","http://localhost:8000"]` |
+| `FILMPOST_CORS_ORIGINS` | JSON list of allowed origins | loopback only |
+| `FILMPOST_ANALYSIS_TIMEOUT_SECONDS` | Wall-clock cap on the OpenAI call | `30.0` |
+| `FILMPOST_ANALYSIS_MAX_OUTPUT_TOKENS` | Per-call token ceiling (cost guard) | `1200` |
+| `FILMPOST_RATE_LIMIT_PER_MINUTE` | Per-IP burst cap on `/v1/analyze` | `10/minute` |
+| `FILMPOST_RATE_LIMIT_PER_DAY` | Per-IP daily cap on `/v1/analyze` | `100/day` |
+| `FILMPOST_RATE_LIMIT_ENABLED` | Set `false` in tests / behind your own gateway | `true` |
 
 ### Tests
 
 ```bash
+# Backend (FastAPI + image sanitizer + service)
 cd backend && source .venv/bin/activate && pytest -q
+
+# iOS core (multipart, decoding, share text, URLProtocol-stubbed APIClient)
+cd ios/FilmPostCore && swift test
 ```
 
-The suite uses a stubbed `AnalysisService` — no OpenAI key required.
+Both suites run with stubs — no OpenAI key or live network required. The iOS APIClient tests use a `URLProtocol` stub to drive the real `URLSession` + multipart + decoder seam against scripted responses (happy path, 4xx with backend `detail`, offline, timed-out, garbage body).
 
 ## Running on a Physical Device or TestFlight
 
@@ -116,17 +130,19 @@ The default backend URL in [ios/FilmPost/Info.plist](ios/FilmPost/Info.plist) is
 
 ## Verified
 
-- `pytest -q` → **5 passed**
-- `xcodegen generate` → builds a clean `FilmPost.xcodeproj`
-- End-to-end run on iPhone 16 simulator (iOS 18) hitting a local backend with a real OpenAI key — the refreshed screenshots above were captured from the current live build.
+- `pytest -q` → **17 passed** (image sanitizer + service guards + API contract)
+- `swift test` in `ios/FilmPostCore` → **8 passed** (multipart, decoding, share text, URLProtocol-stubbed APIClient)
+- `xcodegen generate && xcodebuild -scheme FilmPost ... build` → clean build on iPhone 16 simulator (iOS 18)
+- End-to-end run on iPhone 16 simulator hitting a local backend with a real OpenAI key — the refreshed screenshots above were captured from the current live build.
 
 ## Known Limitations
 
 - No persistence, history, or saved shoots.
-- No live camera capture or on-device composition overlays.
+- No on-device composition overlays (only the captured / picked photo is analyzed; FilmPost does not draw on top of a live viewfinder).
 - No authentication, analytics, or moderation layer.
 - Backend base URL is configured at build time, not in-app.
-- The MVP returns **textual film references**, not licensed still-image assets; this keeps the feature demoable without adding copyright or third-party asset dependencies.
+- The MVP returns **textual film references** plus Wikipedia-sourced posters / portraits with on-screen attribution — not licensed still-image assets — to keep the feature demoable without adding paid third-party asset dependencies.
+- Per-IP rate limiting uses in-process state (slowapi default); for multi-instance deployment, point it at a shared Redis backend.
 - Placeholder app icon — fine for review, not branding.
 
 ## License
