@@ -30,3 +30,11 @@ def test_user_prompt_mentions_both_images_and_required_fields() -> None:
         "cinema_reference",
     ]:
         assert field_name in prompt
+
+
+def test_user_prompt_requires_concise_context_summary() -> None:
+    prompt = build_user_prompt()
+
+    assert "context_summary" in prompt
+    assert "1 sentence" in prompt
+    assert "140 characters" in prompt

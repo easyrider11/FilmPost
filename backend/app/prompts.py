@@ -89,5 +89,5 @@ Additional guidance:
 - Give direct, imperative instructions ("Stand…", "Step back to…", "Turn the shoulder toward…"). Avoid hedging words like "consider", "perhaps", "try to".
 - Recommendations should be actionable by a photographer directing a real person on location, while the voice feels like a major director explaining intention.
 - Keep the writing elegant, visual, and concise.
-- context_summary should describe the combined creative opportunity across both images in one short paragraph, and hint at the range of approaches the three directions will span.
+- context_summary should be a concise scene read: 1 sentence, ideally 12-20 words, never more than 140 characters.
 """.strip()

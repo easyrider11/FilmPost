@@ -36,6 +36,14 @@ struct ResultsView: View {
                 .padding(.bottom, 28)
             }
         }
+        .navigationDestination(for: CinemaDetailDestination.self) { destination in
+            switch destination {
+            case .director(let ctx):
+                DirectorDetailView(context: ctx)
+            case .film(let ctx):
+                FilmDetailView(context: ctx)
+            }
+        }
     }
 
     // MARK: - Top bar
@@ -166,26 +174,70 @@ private struct ContextSummaryCard: View {
     let summary: String
     let subjectPhoto: SelectedPhoto?
     let backgroundPhoto: SelectedPhoto?
+    @State private var isExpanded = false
 
     var body: some View {
-        HStack(alignment: .top, spacing: 14) {
-            HStack(spacing: 8) {
-                preview(for: subjectPhoto, label: "Subject")
-                preview(for: backgroundPhoto, label: "Location")
-            }
+        Button(action: toggleExpanded) {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(spacing: 10) {
+                    preview(for: subjectPhoto, label: "Subject")
+                    preview(for: backgroundPhoto, label: "Location")
+                }
+                .frame(maxWidth: .infinity)
 
-            VStack(alignment: .leading, spacing: 8) {
-                Kicker(text: "Scene read")
+                VStack(alignment: .leading, spacing: 10) {
+                    Kicker(text: "Scene read")
 
-                Text(summary)
-                .font(FilmPostType.body(.subheadline))
-                .foregroundStyle(FilmPostTheme.ink)
-                .lineSpacing(3)
-                .fixedSize(horizontal: false, vertical: true)
+                    Text(displaySummary)
+                        .font(FilmPostType.body(.subheadline))
+                        .foregroundStyle(FilmPostTheme.ink)
+                        .lineSpacing(2)
+                        .lineLimit(isExpanded ? nil : 3)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    if showsExpansionControl {
+                        HStack(spacing: 6) {
+                            Text(isExpanded ? "Show less" : "Read full scene read")
+                                .font(FilmPostType.body(.footnote, weight: .semibold))
+                            Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                                .font(.system(size: 11, weight: .semibold))
+                        }
+                        .foregroundStyle(FilmPostTheme.rust)
+                    }
+                }
             }
+            .padding(16)
+            .editorialCard(cornerRadius: 24)
         }
-        .padding(16)
-        .editorialCard(cornerRadius: 24)
+        .buttonStyle(.plain)
+        .accessibilityLabel("Scene read")
+        .accessibilityValue(isExpanded ? "Expanded" : "Collapsed")
+        .accessibilityHint(showsExpansionControl
+            ? (isExpanded ? "Double tap to collapse the full scene read" : "Double tap to expand the full scene read")
+            : "Shows a short scene summary")
+    }
+
+    private var compactSummary: String {
+        SummaryCompressor.compact(summary)
+    }
+
+    private var normalizedSummary: String {
+        SummaryCompressor.normalize(summary)
+    }
+
+    private var displaySummary: String {
+        isExpanded ? normalizedSummary : compactSummary
+    }
+
+    private var showsExpansionControl: Bool {
+        normalizedSummary != compactSummary
+    }
+
+    private func toggleExpanded() {
+        guard showsExpansionControl else { return }
+        withAnimation(.smooth(duration: 0.24)) {
+            isExpanded.toggle()
+        }
     }
 
     @ViewBuilder
@@ -201,7 +253,8 @@ private struct ContextSummaryCard: View {
                         .fill(FilmPostTheme.mist)
                 }
             }
-            .frame(width: 58, height: 70)
+            .frame(maxWidth: .infinity)
+            .frame(height: 96)
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
 
             Text(label)
@@ -213,6 +266,41 @@ private struct ContextSummaryCard: View {
                 .padding(6)
         }
         .accessibilityLabel("\(label) image preview")
+    }
+}
+
+private enum SummaryCompressor {
+    static func compact(_ summary: String, maxWords: Int = 20) -> String {
+        let cleaned = normalize(summary)
+
+        guard !cleaned.isEmpty else { return "" }
+
+        let firstSentence = cleaned
+            .split(whereSeparator: { ".!?".contains($0) })
+            .first
+            .map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
+
+        if let firstSentence {
+            let words = firstSentence.split(whereSeparator: \.isWhitespace)
+            if words.count <= maxWords {
+                return firstSentence.hasSuffix(".") ? firstSentence : "\(firstSentence)."
+            }
+        }
+
+        let words = cleaned.split(whereSeparator: \.isWhitespace)
+        let clipped = words.prefix(maxWords).joined(separator: " ")
+        if words.count > maxWords {
+            return "\(clipped)..."
+        }
+
+        return cleaned.hasSuffix(".") ? cleaned : "\(cleaned)."
+    }
+
+    static func normalize(_ summary: String) -> String {
+        summary
+            .replacingOccurrences(of: "\n", with: " ")
+            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 }
 

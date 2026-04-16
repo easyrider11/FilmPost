@@ -2,6 +2,7 @@ import SwiftUI
 
 struct AnalysisLoadingView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    private let horizontalContentInset: CGFloat = 12
     let subjectPhoto: SelectedPhoto?
     let backgroundPhoto: SelectedPhoto?
 
@@ -15,34 +16,38 @@ struct AnalysisLoadingView: View {
     ]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            header
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 18) {
+                loadingBadge
 
-            HStack(spacing: 12) {
-                DevelopingFrame(title: "Subject", photo: subjectPhoto, progress: scanProgress)
-                DevelopingFrame(title: "Location", photo: backgroundPhoto, progress: scanProgress)
-            }
+                header
 
-            VStack(alignment: .leading, spacing: 0) {
-                ForEach(steps.indices, id: \.self) { index in
-                    LoadingStep(
-                        index: index,
-                        label: steps[index],
-                        state: stepState(for: index),
-                        showsActivePulse: !reduceMotion
-                    )
+                HStack(spacing: 12) {
+                    DevelopingFrame(title: "Subject", photo: subjectPhoto, progress: scanProgress)
+                    DevelopingFrame(title: "Location", photo: backgroundPhoto, progress: scanProgress)
+                }
 
-                    if index != steps.indices.last {
-                        Hairline().padding(.vertical, 4)
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(steps.indices, id: \.self) { index in
+                        LoadingStep(
+                            index: index,
+                            label: steps[index],
+                            state: stepState(for: index),
+                            showsActivePulse: !reduceMotion
+                        )
+
+                        if index != steps.indices.last {
+                            Hairline().padding(.vertical, 4)
+                        }
                     }
                 }
+                .padding(18)
+                .editorialCard(cornerRadius: 24)
             }
-            .padding(18)
-            .editorialCard(cornerRadius: 24)
-
-            Spacer(minLength: 0)
+            .padding(.top, 12)
+            .padding(.horizontal, horizontalContentInset)
+            .padding(.bottom, 24)
         }
-        .padding(.top, 16)
         .onAppear {
             startScanAnimationIfNeeded()
             advanceSteps()
@@ -78,25 +83,44 @@ struct AnalysisLoadingView: View {
         }
     }
 
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Kicker(text: "Analyzing your pairing")
-
-            Text("Building three directions from both photos.")
-                .font(FilmPostType.display(.title, weight: .semibold))
+    private var loadingBadge: some View {
+        HStack(spacing: 10) {
+            ProgressView()
+                .tint(FilmPostTheme.amber)
+                .scaleEffect(0.95)
+            Text("ANALYZING")
+                .font(FilmPostType.label(.caption, weight: .bold))
                 .foregroundStyle(FilmPostTheme.ink)
-                .kerning(-0.4)
-                .fixedSize(horizontal: false, vertical: true)
-
-            Text("FilmPost is reading posture, environment, framing potential, and light so the advice feels specific enough to shoot.")
-                .font(FilmPostType.body(.subheadline))
+                .tracking(FilmPostType.labelTracking)
+            AnimatedDots()
+                .foregroundStyle(FilmPostTheme.amber)
+            Spacer()
+            Text("~15s")
+                .font(FilmPostType.mono(.caption2, weight: .semibold))
                 .foregroundStyle(FilmPostTheme.slate)
-                .lineSpacing(3)
-                .fixedSize(horizontal: false, vertical: true)
         }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            Capsule(style: .continuous)
+                .fill(FilmPostTheme.amber.opacity(0.10))
+                .overlay(
+                    Capsule(style: .continuous)
+                        .stroke(FilmPostTheme.amber.opacity(0.45), lineWidth: 1)
+                )
+        )
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Analyzing your photos")
-        .accessibilityAddTraits(.updatesFrequently)
+        .accessibilityLabel("Analyzing, please wait")
+    }
+
+    private var header: some View {
+        Text("Three directions, coming up.")
+            .font(FilmPostType.display(.title, weight: .semibold))
+            .foregroundStyle(FilmPostTheme.ink)
+            .kerning(-0.4)
+            .fixedSize(horizontal: false, vertical: true)
+            .accessibilityAddTraits(.isHeader)
     }
 }
 
@@ -153,6 +177,33 @@ private struct DevelopingFrame: View {
         }
         .padding(14)
         .editorialCard(cornerRadius: 22)
+    }
+}
+
+private struct AnimatedDots: View {
+    @State private var phase: Int = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        HStack(spacing: 3) {
+            ForEach(0..<3, id: \.self) { i in
+                Circle()
+                    .frame(width: 5, height: 5)
+                    .opacity(opacity(for: i))
+            }
+        }
+        .onAppear {
+            guard !reduceMotion else { return }
+            Timer.scheduledTimer(withTimeInterval: 0.45, repeats: true) { _ in
+                phase = (phase + 1) % 3
+            }
+        }
+        .accessibilityHidden(true)
+    }
+
+    private func opacity(for index: Int) -> Double {
+        if reduceMotion { return 0.85 }
+        return index == phase ? 1.0 : 0.30
     }
 }
 

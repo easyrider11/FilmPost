@@ -21,7 +21,10 @@ struct RecommendationCard: View {
 
                 CinemaAnchorCard(
                     cinemaReference: recommendation.cinemaReference,
-                    whyThisMatches: recommendation.whyThisMatches
+                    whyThisMatches: recommendation.whyThisMatches,
+                    directorNote: recommendation.directorNote,
+                    filmMood: recommendation.referenceFilmMood,
+                    emotionalGoal: recommendation.emotionalGoal
                 )
 
                 DetailSection(
@@ -170,19 +173,63 @@ private struct DirectorBriefCard: View {
 private struct CinemaAnchorCard: View {
     let cinemaReference: CinemaReference
     let whyThisMatches: String
+    let directorNote: String
+    let filmMood: String
+    let emotionalGoal: String
+
+    private var filmContext: FilmContext {
+        FilmContext(
+            title: cinemaReference.filmTitle,
+            director: cinemaReference.director,
+            sceneAnchor: cinemaReference.sceneAnchor,
+            whyItConnects: cinemaReference.whyItConnects,
+            borrowedTechnique: cinemaReference.borrowedTechnique,
+            filmMood: filmMood,
+            directorNote: directorNote,
+            emotionalGoal: emotionalGoal
+        )
+    }
+
+    private var directorContext: DirectorContext {
+        DirectorContext(
+            name: cinemaReference.director,
+            directorNote: directorNote,
+            filmMood: filmMood,
+            emotionalGoal: emotionalGoal
+        )
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Kicker(text: "Cinema anchor")
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(cinemaReference.filmTitle)
-                    .font(FilmPostType.display(.headline, weight: .semibold))
-                    .foregroundStyle(FilmPostTheme.ink)
+            VStack(alignment: .leading, spacing: 6) {
+                // Film title — tappable link
+                NavigationLink(value: CinemaDetailDestination.film(filmContext)) {
+                    HStack(spacing: 5) {
+                        Text(cinemaReference.filmTitle)
+                            .font(FilmPostType.display(.headline, weight: .semibold))
+                            .foregroundStyle(FilmPostTheme.ink)
+                            .multilineTextAlignment(.leading)
+                        Image(systemName: "film")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(FilmPostTheme.amber)
+                    }
+                }
+                .buttonStyle(.plain)
 
-                Text(cinemaReference.director)
-                    .font(FilmPostType.body(.footnote, weight: .medium))
-                    .foregroundStyle(FilmPostTheme.rust)
+                // Director — tappable link
+                NavigationLink(value: CinemaDetailDestination.director(directorContext)) {
+                    HStack(spacing: 4) {
+                        Text(cinemaReference.director)
+                            .font(FilmPostType.body(.footnote, weight: .medium))
+                            .foregroundStyle(FilmPostTheme.rust)
+                        Image(systemName: "arrow.up.right")
+                            .font(.system(size: 9, weight: .semibold))
+                            .foregroundStyle(FilmPostTheme.rust.opacity(0.75))
+                    }
+                }
+                .buttonStyle(.plain)
             }
 
             Text(cinemaReference.sceneAnchor)
@@ -223,7 +270,7 @@ private struct CompactMetaRow: View {
                 .font(FilmPostType.label(.caption, weight: .semibold))
                 .foregroundStyle(FilmPostTheme.slate)
                 .textCase(.uppercase)
-                .tracking(0.9)
+                .tracking(FilmPostType.labelTracking)
 
             Text(value)
                 .font(FilmPostType.body(.footnote))
@@ -266,7 +313,7 @@ private struct DetailBlock: View {
                 .font(FilmPostType.label(.caption, weight: .semibold))
                 .foregroundStyle(FilmPostTheme.slate)
                 .textCase(.uppercase)
-                .tracking(1.0)
+                .tracking(FilmPostType.labelTracking)
 
             Text(item.value)
                 .font(FilmPostType.body(.subheadline))

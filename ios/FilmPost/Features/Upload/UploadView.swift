@@ -2,6 +2,8 @@ import PhotosUI
 import SwiftUI
 
 struct UploadView: View {
+    private let horizontalContentInset: CGFloat = 12
+    private let analyzeButtonTextOffset: CGFloat = 6
     @Bindable var model: AppModel
     @State private var subjectPickerItem: PhotosPickerItem?
     @State private var backgroundPickerItem: PhotosPickerItem?
@@ -44,6 +46,7 @@ struct UploadView: View {
                 Button(action: analyzeImages) {
                     HStack(spacing: 10) {
                         Text("Analyze images")
+                            .padding(.leading, analyzeButtonTextOffset)
                         Spacer()
                         Image(systemName: "arrow.right")
                     }
@@ -61,6 +64,7 @@ struct UploadView: View {
                     .padding(.horizontal, 4)
             }
             .padding(.top, 16)
+            .padding(.horizontal, horizontalContentInset)
         }
         .task(id: subjectPickerItem) {
             await loadSubjectPhotoIfNeeded()
@@ -84,7 +88,7 @@ struct UploadView: View {
                 .font(FilmPostType.display(.largeTitle, weight: .semibold))
                 .foregroundStyle(FilmPostTheme.ink)
                 .lineSpacing(2)
-                .kerning(-0.7)
+                .kerning(FilmPostType.displayKerning)
 
             Text("Choose one subject photo and one background photo. FilmPost turns the pair into three cinematic directions with pose, framing, color, distance, and light.")
                 .font(FilmPostType.body(.subheadline, weight: .regular))

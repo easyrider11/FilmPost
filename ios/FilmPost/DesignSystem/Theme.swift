@@ -1,23 +1,32 @@
 import SwiftUI
 import UIKit
 
-/// Color tokens for FilmPost. The palette stays warm and cinematic, but the
-/// surfaces are softer so the app still feels native and calm on iPhone.
+/// Color tokens for FilmPost.
+///
+/// Direction: **refined cinematheque editorial** — bone whites, deep graphite ink,
+/// a single warm accent (ochre) and a sharp wine accent for highlights. The
+/// surface family is tightly stepped so cards register without competing with
+/// the content layer.
 enum FilmPostTheme {
-    static let paper  = dynamicColor(light: 0xF7F4ED, dark: 0x11100E)
-    static let haze   = dynamicColor(light: 0xEEE8DD, dark: 0x181713)
-    static let panel  = dynamicColor(light: 0xEAE4D7, dark: 0x201F1A)
-    static let card   = dynamicColor(light: 0xFFFCF6, dark: 0x1B1916, lightAlpha: 0.94, darkAlpha: 0.96)
-    static let mist   = dynamicColor(light: 0xFFFFFF, dark: 0x2A2722, lightAlpha: 0.66, darkAlpha: 0.46)
+    // Surface family — four tones, each with a clear job.
+    static let paper  = dynamicColor(light: 0xECE8DD, dark: 0x0B0B09) // canvas
+    static let haze   = dynamicColor(light: 0xE3DED1, dark: 0x131210) // recessed
+    static let panel  = dynamicColor(light: 0xD8D2C2, dark: 0x191714) // grouped controls
+    static let card   = dynamicColor(light: 0xF6F3E9, dark: 0x171513) // raised cards
+    static let mist   = dynamicColor(light: 0xFFFFFF, dark: 0x23211D, lightAlpha: 0.55, darkAlpha: 0.42)
 
-    static let ink      = dynamicColor(light: 0x171613, dark: 0xF5F1E7)
-    static let slate    = dynamicColor(light: 0x686256, dark: 0xB0A898)
-    static let hairline = dynamicColor(light: 0x171613, dark: 0xF5F1E7, lightAlpha: 0.09, darkAlpha: 0.18)
-    static let line     = dynamicColor(light: 0x171613, dark: 0xF5F1E7, lightAlpha: 0.06, darkAlpha: 0.12)
+    // Type and structure.
+    static let ink      = dynamicColor(light: 0x0E0D0B, dark: 0xEEE9DC)
+    static let slate    = dynamicColor(light: 0x595446, dark: 0xA29B89)
+    static let hairline = dynamicColor(light: 0x0E0D0B, dark: 0xEEE9DC, lightAlpha: 0.10, darkAlpha: 0.16)
+    static let line     = dynamicColor(light: 0x0E0D0B, dark: 0xEEE9DC, lightAlpha: 0.06, darkAlpha: 0.10)
 
-    static let amber  = dynamicColor(light: 0xC58A45, dark: 0xE0A867)
-    static let rust   = dynamicColor(light: 0x8E4324, dark: 0xC7774F)
-    static let shadow = Color.black.opacity(0.10)
+    // Accents — warm ochre as primary brand note, oxblood as the sharp highlight.
+    static let amber  = dynamicColor(light: 0xA06A2C, dark: 0xCE9651)
+    static let rust   = dynamicColor(light: 0x5C231F, dark: 0xB75D4B)
+
+    // Depth.
+    static let shadow = Color.black.opacity(0.08)
 
     private static func dynamicColor(
         light: UInt32,
@@ -42,11 +51,20 @@ enum FilmPostTheme {
     }
 }
 
-/// Typography helpers. Display text keeps a small serif note; everything else
-/// stays system-led for readability and a more native feel.
+/// Typography helpers.
+///
+/// Hierarchy is intentional: a serif display voice for editorial moments, a
+/// disciplined sans body, and a tightly tracked uppercase label for kickers.
+/// Display callers should also apply `displayKerning` for the chiseled feel.
 enum FilmPostType {
+    /// Display serif. Use for hero titles only.
     static func display(_ style: Font.TextStyle = .largeTitle, weight: Font.Weight = .semibold) -> Font {
         .system(style, design: .serif, weight: weight)
+    }
+
+    /// Optional italic display variant for editorial accents (e.g. film titles).
+    static func displayItalic(_ style: Font.TextStyle = .title2, weight: Font.Weight = .semibold) -> Font {
+        .system(style, design: .serif, weight: weight).italic()
     }
 
     static func body(_ style: Font.TextStyle = .body, weight: Font.Weight = .regular) -> Font {
@@ -60,6 +78,11 @@ enum FilmPostType {
     static func mono(_ style: Font.TextStyle = .caption, weight: Font.Weight = .semibold) -> Font {
         .system(style, design: .monospaced, weight: weight).monospacedDigit()
     }
+
+    /// Tightened tracking for display headlines.
+    static let displayKerning: CGFloat = -0.7
+    /// Tracking for uppercase kickers and metadata labels.
+    static let labelTracking: CGFloat = 1.4
 }
 
 /// A thin divider shared across cards and sections.
@@ -78,16 +101,17 @@ struct Kicker: View {
 
     var body: some View {
         Text(text)
-            .font(FilmPostType.label(.caption, weight: .bold))
+            .font(FilmPostType.label(.caption2, weight: .bold))
             .foregroundStyle(FilmPostTheme.slate)
             .textCase(.uppercase)
-            .tracking(1.1)
+            .tracking(FilmPostType.labelTracking)
             .accessibilityAddTraits(.isHeader)
     }
 }
 
-/// Background for the app. It stays minimal, with a soft warmth rather than a
-/// heavy "movie poster" treatment.
+/// Background for the app. A single warm focal point at the top, then a quiet
+/// gradient down to a slightly deeper haze. The grain is barely there — just
+/// enough texture to keep flat surfaces from looking digital.
 struct CinematicBackdrop: View {
     var body: some View {
         ZStack {
@@ -100,29 +124,19 @@ struct CinematicBackdrop: View {
                 endPoint: .bottom
             )
 
+            // One focal warm glow at the top — the "projector".
             Circle()
                 .fill(
                     RadialGradient(
-                        colors: [FilmPostTheme.amber.opacity(0.16), .clear],
-                        center: .center,
-                        startRadius: 8,
-                        endRadius: 240
-                    )
-                )
-                .frame(width: 320, height: 320)
-                .offset(x: 136, y: -290)
-
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [FilmPostTheme.slate.opacity(0.08), .clear],
+                        colors: [FilmPostTheme.amber.opacity(0.14), .clear],
                         center: .center,
                         startRadius: 4,
                         endRadius: 260
                     )
                 )
                 .frame(width: 360, height: 360)
-                .offset(x: -170, y: 350)
+                .offset(x: 0, y: -300)
+                .blendMode(.plusLighter)
 
             FilmGrain()
         }
@@ -132,7 +146,7 @@ struct CinematicBackdrop: View {
 
 /// Tiny deterministic grain layer drawn with Canvas. Kept intentionally subtle.
 struct FilmGrain: View {
-    var density: Int = 760
+    var density: Int = 320
 
     var body: some View {
         Canvas(rendersAsynchronously: true) { ctx, size in
@@ -140,55 +154,41 @@ struct FilmGrain: View {
             for _ in 0..<density {
                 let x = CGFloat.random(in: 0..<size.width, using: &rng)
                 let y = CGFloat.random(in: 0..<size.height, using: &rng)
-                let a = Double.random(in: 0.02...0.06, using: &rng)
-                let s = CGFloat.random(in: 0.4...1.1, using: &rng)
+                let a = Double.random(in: 0.015...0.04, using: &rng)
+                let s = CGFloat.random(in: 0.4...0.9, using: &rng)
                 let rect = CGRect(x: x, y: y, width: s, height: s)
                 ctx.fill(Path(ellipseIn: rect), with: .color(.black.opacity(a)))
             }
         }
         .blendMode(.multiply)
-        .opacity(0.22)
+        .opacity(0.14)
         .allowsHitTesting(false)
     }
 }
 
 struct EditorialCardModifier: ViewModifier {
-    var cornerRadius: CGFloat = 26
+    var cornerRadius: CGFloat = 22
 
     func body(content: Content) -> some View {
         content
             .background(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                FilmPostTheme.card,
-                                FilmPostTheme.card.opacity(0.96),
-                            ],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
+                    .fill(FilmPostTheme.card)
                     .overlay(
                         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                            .stroke(FilmPostTheme.hairline, lineWidth: 1)
+                            .stroke(FilmPostTheme.hairline, lineWidth: 0.6)
                     )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                            .stroke(Color.white.opacity(0.18), lineWidth: 1)
-                            .blendMode(.overlay)
-                    )
-                    .shadow(color: FilmPostTheme.shadow, radius: 18, x: 0, y: 8)
+                    .shadow(color: FilmPostTheme.shadow, radius: 14, x: 0, y: 6)
             )
     }
 }
 
 extension View {
-    func editorialCard(cornerRadius: CGFloat = 26) -> some View {
+    func editorialCard(cornerRadius: CGFloat = 22) -> some View {
         modifier(EditorialCardModifier(cornerRadius: cornerRadius))
     }
 
-    func glassCard(cornerRadius: CGFloat = 26) -> some View {
+    func glassCard(cornerRadius: CGFloat = 22) -> some View {
         modifier(EditorialCardModifier(cornerRadius: cornerRadius))
     }
 }
