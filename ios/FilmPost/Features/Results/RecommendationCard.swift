@@ -234,12 +234,16 @@ private struct CinemaAnchorCard: View {
 
             Text(cinemaReference.sceneAnchor)
                 .font(FilmPostType.label(.caption, weight: .semibold))
-                .foregroundStyle(FilmPostTheme.ink)
+                .foregroundStyle(FilmPostTheme.verdigris)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
                 .background(
                     Capsule(style: .continuous)
-                        .fill(FilmPostTheme.mist)
+                        .fill(FilmPostTheme.verdigris.opacity(0.10))
+                        .overlay(
+                            Capsule(style: .continuous)
+                                .stroke(FilmPostTheme.verdigris.opacity(0.25), lineWidth: 1)
+                        )
                 )
 
             VStack(alignment: .leading, spacing: 8) {

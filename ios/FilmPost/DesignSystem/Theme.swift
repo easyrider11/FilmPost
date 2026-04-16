@@ -25,6 +25,11 @@ enum FilmPostTheme {
     static let amber  = dynamicColor(light: 0xA06A2C, dark: 0xCE9651)
     static let rust   = dynamicColor(light: 0x5C231F, dark: 0xB75D4B)
 
+    /// Cool counterpoint — verdigris/sage for "atmosphere" and "mood" tones,
+    /// thought of as aged copper or film leader. Use sparingly to balance
+    /// the dominant warm palette.
+    static let verdigris = dynamicColor(light: 0x3F6B62, dark: 0x88B6AB)
+
     // Depth.
     static let shadow = Color.black.opacity(0.08)
 
