@@ -1,7 +1,10 @@
 from functools import lru_cache
 
-from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 
 from app.config import Settings, get_settings
 from app.models import AnalysisResponse
@@ -22,6 +25,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Per-IP rate limiting on the OpenAI-burning endpoint. Without this the
+# operator's API budget is exposed to anyone who can reach the URL.
+# `enabled` honours FILMPOST_RATE_LIMIT_ENABLED so tests / CI can turn it
+# off without faking IPs.
+limiter = Limiter(
+    key_func=get_remote_address,
+    default_limits=[],
+    enabled=settings.rate_limit_enabled,
+)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 
 @lru_cache(maxsize=1)
 def build_analysis_service() -> OpenAIAnalysisService:
@@ -37,8 +52,13 @@ async def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
+# Compound limit string ("10/minute;100/day") protects against both burst
+# abuse and a slow grind. Tunable via FILMPOST_RATE_LIMIT_PER_MINUTE /
+# _PER_DAY env vars.
 @app.post("/v1/analyze", response_model=AnalysisResponse)
+@limiter.limit(f"{settings.rate_limit_per_minute};{settings.rate_limit_per_day}")
 async def analyze_images(
+    request: Request,
     subject_image: UploadFile = File(...),
     background_image: UploadFile = File(...),
     analysis_service: AnalysisService = Depends(get_analysis_service),

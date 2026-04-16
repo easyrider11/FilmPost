@@ -103,3 +103,21 @@ def test_analyze_endpoint_returns_structured_response() -> None:
     assert payload["recommendations"][0]["style"] == "Late Train Stillness"
     assert payload["recommendations"][0]["cinema_reference"]["film_title"] == "Lost in Translation"
     assert "director_note" in payload["recommendations"][0]
+
+
+def test_health_endpoint_returns_ok() -> None:
+    client = TestClient(app)
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+
+
+def test_analyze_endpoint_requires_both_files() -> None:
+    """FastAPI's multipart validator should 422 if either slot is missing,
+    so the endpoint never reaches the OpenAI client with a half-pair."""
+    client = TestClient(app)
+    response = client.post(
+        "/v1/analyze",
+        files={"subject_image": ("subject.jpg", b"x", "image/jpeg")},
+    )
+    assert response.status_code == 422
